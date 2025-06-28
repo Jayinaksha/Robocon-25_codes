@@ -71,10 +71,10 @@ This project features an ESP32-based joystick data receiver integrated with a RO
    ros2 run joy joy_node --ros-args -p deadzone:=0.0
    ```
 2. Echo the joystick data:
-3. ```bash
+   ```bash
    ros2 topic echo /joy
    ```
-4. Start the `joy_serial_bridge`:
+3. Start the `joy_serial_bridge`:
    ```bash
    ros2 run joy_serial_bridge joy_to_serial --ros-args -p dev:=/dev/ttyUSB0 -p baud:=115200
    ```
