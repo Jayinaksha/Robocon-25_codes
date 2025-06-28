@@ -32,22 +32,17 @@ const int freq = 5000; //PWM frequency
 const int resolution = 8; //PWM resolution (0-255)
 
 // direction
-int mr = 23; // right motor
-int ml = 22; // left motor
-int ma = 13; // Shoot angle motor
+int mr = 23; // right
+int ml = 22; // left
 
 // pwm
 int Mr = 19; // right
 int Ml = 21; // left
-int Ma = 14; // shoot angle 
 
 //PWM channels for motors
 const int MR_pwmChannel = 0;
 const int ML_pwmChannel = 1;
-const int MA_pwmChannel = 2;
 
-// Angle change speed
-const int angle_change_speed = 150;
 //rotation speed
 const int rot_speed = 100;
 const int incr_dcr_const = 10;
@@ -71,10 +66,6 @@ void setup() {
   ledcSetup(ML_pwmChannel, freq, resolution);
   ledcAttachPin(Ml, ML_pwmChannel);
 
-  pinMode(ma, OUTPUT);
-  ledcSetup(MA_pwmChannel, freq, resolution);
-  ledcAttachPin(Ma, MA_pwmChannel);
-
   Serial.println("Motors initialised. Send the data.");
 
   Serial.println("ESP32 Shoot Controller started");
@@ -82,7 +73,7 @@ void setup() {
 }
 
 void loop() {
-  check();
+  check_override();
   static String inputBuffer = "";
 
   while (Serial.available()) {
@@ -119,15 +110,13 @@ void Shoot_control(){
 
   if (Override==1){
     ledcWrite(MR_pwmChannel,0);
-    ledcWrite(ML_pwmChannel,0);
-    ledcWrite(MA_pwmChannel,0);
-    Rotate_angle(initial_angle);
+    ledcWrite(ML_pwmChannel,0); 
   }
 
   else if(Stop_mode==1){
     ledcWrite(MR_pwmChannel,0);
     ledcWrite(ML_pwmChannel,0);
-    Rotate_angle(initial_angle);
+    Rotate_angle(120);
 
   }
 
@@ -149,19 +138,9 @@ void Shoot_control(){
     Serial.println(speed);
   }
 
-  else if (buttons[10]==1){
+  else if (buttons[5]==1){
     delay(250);
     shoot();
-  }
-
-  else if (buttons[14]==1){
-    digitalWrite(ma, 0);
-    ledcWrite(MA_pwmChannel,angle_change_speed);
-  }
-
-  else if (buttons[13]==1){
-    digitalWrite(ma, 1);
-    ledcWrite(MA_pwmChannel,angle_change_speed);
   }
 
   else{
@@ -191,24 +170,7 @@ int parseAxes(String &axesStr, float *axes, int maxAxes) {
   return axisIndex;
 }
 
-// Helper function to parse buttons
-int parseButtons(String &buttonsStr, int *buttons, int maxButtons) {
-  int startPos = 0, buttonIndex = 0;
-
-  while (startPos >= 0 && buttonIndex < maxButtons) {
-    int commaPos = buttonsStr.indexOf(',', startPos);
-    if (commaPos >= 0) {
-      buttons[buttonIndex++] = buttonsStr.substring(startPos, commaPos).toInt();
-      startPos = commaPos + 1;
-    } else {
-      buttons[buttonIndex++] = buttonsStr.substring(startPos).toInt();
-      break;
-    }
-  }
-  return buttonIndex;
-}
-
-void check(){
+void check_override(){
   if(buttons[9]==1){
     delay(250);
     Override =! Override;
@@ -293,6 +255,23 @@ void check(){
   }
 }
 
+// Helper function to parse buttons
+int parseButtons(String &buttonsStr, int *buttons, int maxButtons) {
+  int startPos = 0, buttonIndex = 0;
+
+  while (startPos >= 0 && buttonIndex < maxButtons) {
+    int commaPos = buttonsStr.indexOf(',', startPos);
+    if (commaPos >= 0) {
+      buttons[buttonIndex++] = buttonsStr.substring(startPos, commaPos).toInt();
+      startPos = commaPos + 1;
+    } else {
+      buttons[buttonIndex++] = buttonsStr.substring(startPos).toInt();
+      break;
+    }
+  }
+  return buttonIndex;
+}
+
 void Rotate_angle(int targetAngle){
   if(currentAngle == targetAngle) return;
 
@@ -314,15 +293,11 @@ void motor_rpm(int speed){
 }
 
 void shoot(){
-  if(Shoot_mode1==1 || Shoot_mode2==1 || Shoot_mode3 == 1){
-    Rotate_angle(shoot_angle);
-    Serial.println("Shooting");
-    delay(1500);
-    Rotate_angle(initial_angle);
-    Serial.println("Comming back, stopping...");
-    Stop_mode= 1;
-    Shoot_mode1= 0;
-    Shoot_mode2= 0;
-    Shoot_mode3= 0;
-  }
+  Rotate_angle(shoot_angle);
+  delay(1500);
+  Rotate_angle(initial_angle);
+  bool Stop_mode= true;
+  bool Shoot_mode1= false;
+  bool Shoot_mode2= false;
+  bool Shoot_mode3= false;
 }

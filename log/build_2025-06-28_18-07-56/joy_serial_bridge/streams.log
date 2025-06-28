@@ -1,0 +1,37 @@
+[0.702s] Invoking command in '/home/noblehalogen/Robocon25_codes/joy_serial_ws/src/joy_serial_bridge': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/noblehalogen/Robocon25_codes/build/joy_serial_bridge/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/noblehalogen/Robocon25_codes/install/joy_serial_bridge/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/joy_serial_bridge build --build-base /home/noblehalogen/Robocon25_codes/build/joy_serial_bridge/build install --record /home/noblehalogen/Robocon25_codes/build/joy_serial_bridge/install.log --single-version-externally-managed install_data
+[0.900s] running egg_info
+[0.900s] creating ../../../build/joy_serial_bridge/joy_serial_bridge.egg-info
+[0.916s] writing ../../../build/joy_serial_bridge/joy_serial_bridge.egg-info/PKG-INFO
+[0.916s] writing dependency_links to ../../../build/joy_serial_bridge/joy_serial_bridge.egg-info/dependency_links.txt
+[0.916s] writing entry points to ../../../build/joy_serial_bridge/joy_serial_bridge.egg-info/entry_points.txt
+[0.916s] writing requirements to ../../../build/joy_serial_bridge/joy_serial_bridge.egg-info/requires.txt
+[0.917s] writing top-level names to ../../../build/joy_serial_bridge/joy_serial_bridge.egg-info/top_level.txt
+[0.917s] writing manifest file '../../../build/joy_serial_bridge/joy_serial_bridge.egg-info/SOURCES.txt'
+[0.946s] reading manifest file '../../../build/joy_serial_bridge/joy_serial_bridge.egg-info/SOURCES.txt'
+[0.946s] writing manifest file '../../../build/joy_serial_bridge/joy_serial_bridge.egg-info/SOURCES.txt'
+[0.946s] running build
+[0.947s] running build_py
+[0.947s] creating /home/noblehalogen/Robocon25_codes/build/joy_serial_bridge/build
+[0.947s] creating /home/noblehalogen/Robocon25_codes/build/joy_serial_bridge/build/lib
+[0.947s] creating /home/noblehalogen/Robocon25_codes/build/joy_serial_bridge/build/lib/joy_serial_bridge
+[0.947s] copying joy_serial_bridge/__init__.py -> /home/noblehalogen/Robocon25_codes/build/joy_serial_bridge/build/lib/joy_serial_bridge
+[0.947s] copying joy_serial_bridge/joy_to_serial.py -> /home/noblehalogen/Robocon25_codes/build/joy_serial_bridge/build/lib/joy_serial_bridge
+[0.947s] running install
+[0.952s] running install_lib
+[0.967s] creating /home/noblehalogen/Robocon25_codes/install/joy_serial_bridge/lib/python3.12/site-packages/joy_serial_bridge
+[0.967s] copying /home/noblehalogen/Robocon25_codes/build/joy_serial_bridge/build/lib/joy_serial_bridge/__init__.py -> /home/noblehalogen/Robocon25_codes/install/joy_serial_bridge/lib/python3.12/site-packages/joy_serial_bridge
+[0.967s] copying /home/noblehalogen/Robocon25_codes/build/joy_serial_bridge/build/lib/joy_serial_bridge/joy_to_serial.py -> /home/noblehalogen/Robocon25_codes/install/joy_serial_bridge/lib/python3.12/site-packages/joy_serial_bridge
+[0.967s] byte-compiling /home/noblehalogen/Robocon25_codes/install/joy_serial_bridge/lib/python3.12/site-packages/joy_serial_bridge/__init__.py to __init__.cpython-312.pyc
+[0.967s] byte-compiling /home/noblehalogen/Robocon25_codes/install/joy_serial_bridge/lib/python3.12/site-packages/joy_serial_bridge/joy_to_serial.py to joy_to_serial.cpython-312.pyc
+[0.968s] running install_data
+[0.968s] creating /home/noblehalogen/Robocon25_codes/install/joy_serial_bridge/share/ament_index
+[0.968s] creating /home/noblehalogen/Robocon25_codes/install/joy_serial_bridge/share/ament_index/resource_index
+[0.968s] creating /home/noblehalogen/Robocon25_codes/install/joy_serial_bridge/share/ament_index/resource_index/packages
+[0.968s] copying resource/joy_serial_bridge -> /home/noblehalogen/Robocon25_codes/install/joy_serial_bridge/share/ament_index/resource_index/packages
+[0.968s] copying package.xml -> /home/noblehalogen/Robocon25_codes/install/joy_serial_bridge/share/joy_serial_bridge
+[0.968s] running install_egg_info
+[0.984s] Copying ../../../build/joy_serial_bridge/joy_serial_bridge.egg-info to /home/noblehalogen/Robocon25_codes/install/joy_serial_bridge/lib/python3.12/site-packages/joy_serial_bridge-0.1.0-py3.12.egg-info
+[0.986s] running install_scripts
+[1.084s] Installing joy_to_serial script to /home/noblehalogen/Robocon25_codes/install/joy_serial_bridge/lib/joy_serial_bridge
+[1.084s] writing list of installed files to '/home/noblehalogen/Robocon25_codes/build/joy_serial_bridge/install.log'
+[1.110s] Invoked command in '/home/noblehalogen/Robocon25_codes/joy_serial_ws/src/joy_serial_bridge' returned '0': DEBUGINFOD_URLS=https://debuginfod.ubuntu.com PYTHONPATH=/home/noblehalogen/Robocon25_codes/build/joy_serial_bridge/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/noblehalogen/Robocon25_codes/install/joy_serial_bridge/lib/python3.12/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/joy_serial_bridge build --build-base /home/noblehalogen/Robocon25_codes/build/joy_serial_bridge/build install --record /home/noblehalogen/Robocon25_codes/build/joy_serial_bridge/install.log --single-version-externally-managed install_data
