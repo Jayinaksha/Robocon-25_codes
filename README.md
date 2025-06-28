@@ -84,7 +84,10 @@ This project features an ESP32-based joystick data receiver integrated with a RO
 ### Debugging
 Monitor joystick inputs and robot actions via the Arduino Serial Monitor or an alternative terminal:
 ```bash
-screen /dev/ttyUSB0 115200
+sudo apt install minicom
+```
+```bash
+minicom -D /dev/ttyUSB0 -b 115200
 ```
 You should see parsed joystick data and corresponding robot actions.
 
