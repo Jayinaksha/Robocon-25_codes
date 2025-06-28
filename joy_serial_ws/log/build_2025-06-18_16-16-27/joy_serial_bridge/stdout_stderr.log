@@ -1,0 +1,35 @@
+running egg_info
+creating ../../build/joy_serial_bridge/joy_serial_bridge.egg-info
+writing ../../build/joy_serial_bridge/joy_serial_bridge.egg-info/PKG-INFO
+writing dependency_links to ../../build/joy_serial_bridge/joy_serial_bridge.egg-info/dependency_links.txt
+writing entry points to ../../build/joy_serial_bridge/joy_serial_bridge.egg-info/entry_points.txt
+writing requirements to ../../build/joy_serial_bridge/joy_serial_bridge.egg-info/requires.txt
+writing top-level names to ../../build/joy_serial_bridge/joy_serial_bridge.egg-info/top_level.txt
+writing manifest file '../../build/joy_serial_bridge/joy_serial_bridge.egg-info/SOURCES.txt'
+reading manifest file '../../build/joy_serial_bridge/joy_serial_bridge.egg-info/SOURCES.txt'
+writing manifest file '../../build/joy_serial_bridge/joy_serial_bridge.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/noblehalogen/joy_serial_ws/build/joy_serial_bridge/build
+creating /home/noblehalogen/joy_serial_ws/build/joy_serial_bridge/build/lib
+creating /home/noblehalogen/joy_serial_ws/build/joy_serial_bridge/build/lib/joy_serial_bridge
+copying joy_serial_bridge/jot_to_serial.py -> /home/noblehalogen/joy_serial_ws/build/joy_serial_bridge/build/lib/joy_serial_bridge
+copying joy_serial_bridge/__init__.py -> /home/noblehalogen/joy_serial_ws/build/joy_serial_bridge/build/lib/joy_serial_bridge
+running install
+running install_lib
+creating /home/noblehalogen/joy_serial_ws/install/joy_serial_bridge/lib/python3.12/site-packages/joy_serial_bridge
+copying /home/noblehalogen/joy_serial_ws/build/joy_serial_bridge/build/lib/joy_serial_bridge/jot_to_serial.py -> /home/noblehalogen/joy_serial_ws/install/joy_serial_bridge/lib/python3.12/site-packages/joy_serial_bridge
+copying /home/noblehalogen/joy_serial_ws/build/joy_serial_bridge/build/lib/joy_serial_bridge/__init__.py -> /home/noblehalogen/joy_serial_ws/install/joy_serial_bridge/lib/python3.12/site-packages/joy_serial_bridge
+byte-compiling /home/noblehalogen/joy_serial_ws/install/joy_serial_bridge/lib/python3.12/site-packages/joy_serial_bridge/jot_to_serial.py to jot_to_serial.cpython-312.pyc
+byte-compiling /home/noblehalogen/joy_serial_ws/install/joy_serial_bridge/lib/python3.12/site-packages/joy_serial_bridge/__init__.py to __init__.cpython-312.pyc
+running install_data
+creating /home/noblehalogen/joy_serial_ws/install/joy_serial_bridge/share/ament_index
+creating /home/noblehalogen/joy_serial_ws/install/joy_serial_bridge/share/ament_index/resource_index
+creating /home/noblehalogen/joy_serial_ws/install/joy_serial_bridge/share/ament_index/resource_index/packages
+copying resource/joy_serial_bridge -> /home/noblehalogen/joy_serial_ws/install/joy_serial_bridge/share/ament_index/resource_index/packages
+copying package.xml -> /home/noblehalogen/joy_serial_ws/install/joy_serial_bridge/share/joy_serial_bridge
+running install_egg_info
+Copying ../../build/joy_serial_bridge/joy_serial_bridge.egg-info to /home/noblehalogen/joy_serial_ws/install/joy_serial_bridge/lib/python3.12/site-packages/joy_serial_bridge-0.1.0-py3.12.egg-info
+running install_scripts
+Installing joy_to_serial script to /home/noblehalogen/joy_serial_ws/install/joy_serial_bridge/lib/joy_serial_bridge
+writing list of installed files to '/home/noblehalogen/joy_serial_ws/build/joy_serial_bridge/install.log'

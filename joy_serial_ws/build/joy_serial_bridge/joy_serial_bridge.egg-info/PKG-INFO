@@ -1,0 +1,7 @@
+Metadata-Version: 2.1
+Name: joy-serial-bridge
+Version: 0.1.0
+Summary: Bridge /joy → ESP via serial
+Maintainer: Jayinaksha
+Maintainer-email: jayinaksha_2302cm08@iitp.ac.in
+License: Apache-2.0
