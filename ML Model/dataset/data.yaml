@@ -1,0 +1,6 @@
+# data.yaml
+train: dataset/images/train
+val: dataset/images/val
+
+nc: 1   # Number of classes (change if different)
+names: ['bot']  # List class names here
