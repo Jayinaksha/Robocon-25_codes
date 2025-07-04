@@ -1,0 +1,35 @@
+running egg_info
+creating ../../build/joy_serial_bridge/joy_serial_bridge.egg-info
+writing ../../build/joy_serial_bridge/joy_serial_bridge.egg-info/PKG-INFO
+writing dependency_links to ../../build/joy_serial_bridge/joy_serial_bridge.egg-info/dependency_links.txt
+writing entry points to ../../build/joy_serial_bridge/joy_serial_bridge.egg-info/entry_points.txt
+writing requirements to ../../build/joy_serial_bridge/joy_serial_bridge.egg-info/requires.txt
+writing top-level names to ../../build/joy_serial_bridge/joy_serial_bridge.egg-info/top_level.txt
+writing manifest file '../../build/joy_serial_bridge/joy_serial_bridge.egg-info/SOURCES.txt'
+reading manifest file '../../build/joy_serial_bridge/joy_serial_bridge.egg-info/SOURCES.txt'
+writing manifest file '../../build/joy_serial_bridge/joy_serial_bridge.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /workspace/Robocon25_codes/joy_serial_ws/build/joy_serial_bridge/build
+creating /workspace/Robocon25_codes/joy_serial_ws/build/joy_serial_bridge/build/lib
+creating /workspace/Robocon25_codes/joy_serial_ws/build/joy_serial_bridge/build/lib/joy_serial_bridge
+copying joy_serial_bridge/__init__.py -> /workspace/Robocon25_codes/joy_serial_ws/build/joy_serial_bridge/build/lib/joy_serial_bridge
+copying joy_serial_bridge/joy_to_serial.py -> /workspace/Robocon25_codes/joy_serial_ws/build/joy_serial_bridge/build/lib/joy_serial_bridge
+running install
+running install_lib
+creating /workspace/Robocon25_codes/joy_serial_ws/install/joy_serial_bridge/lib/python3.10/site-packages/joy_serial_bridge
+copying /workspace/Robocon25_codes/joy_serial_ws/build/joy_serial_bridge/build/lib/joy_serial_bridge/__init__.py -> /workspace/Robocon25_codes/joy_serial_ws/install/joy_serial_bridge/lib/python3.10/site-packages/joy_serial_bridge
+copying /workspace/Robocon25_codes/joy_serial_ws/build/joy_serial_bridge/build/lib/joy_serial_bridge/joy_to_serial.py -> /workspace/Robocon25_codes/joy_serial_ws/install/joy_serial_bridge/lib/python3.10/site-packages/joy_serial_bridge
+byte-compiling /workspace/Robocon25_codes/joy_serial_ws/install/joy_serial_bridge/lib/python3.10/site-packages/joy_serial_bridge/__init__.py to __init__.cpython-310.pyc
+byte-compiling /workspace/Robocon25_codes/joy_serial_ws/install/joy_serial_bridge/lib/python3.10/site-packages/joy_serial_bridge/joy_to_serial.py to joy_to_serial.cpython-310.pyc
+running install_data
+creating /workspace/Robocon25_codes/joy_serial_ws/install/joy_serial_bridge/share/ament_index
+creating /workspace/Robocon25_codes/joy_serial_ws/install/joy_serial_bridge/share/ament_index/resource_index
+creating /workspace/Robocon25_codes/joy_serial_ws/install/joy_serial_bridge/share/ament_index/resource_index/packages
+copying resource/joy_serial_bridge -> /workspace/Robocon25_codes/joy_serial_ws/install/joy_serial_bridge/share/ament_index/resource_index/packages
+copying package.xml -> /workspace/Robocon25_codes/joy_serial_ws/install/joy_serial_bridge/share/joy_serial_bridge
+running install_egg_info
+Copying ../../build/joy_serial_bridge/joy_serial_bridge.egg-info to /workspace/Robocon25_codes/joy_serial_ws/install/joy_serial_bridge/lib/python3.10/site-packages/joy_serial_bridge-0.1.0-py3.10.egg-info
+running install_scripts
+Installing joy_to_serial script to /workspace/Robocon25_codes/joy_serial_ws/install/joy_serial_bridge/lib/joy_serial_bridge
+writing list of installed files to '/workspace/Robocon25_codes/joy_serial_ws/build/joy_serial_bridge/install.log'

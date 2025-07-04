@@ -1,0 +1,25 @@
+[0.418s] Invoking command in '/workspace/Robocon25_codes/joy_py/src/joy_serial_bridge': PYTHONPATH=/workspace/Robocon25_codes/joy_py/build/joy_serial_bridge/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/Robocon25_codes/joy_py/install/joy_serial_bridge/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/joy_serial_bridge build --build-base /workspace/Robocon25_codes/joy_py/build/joy_serial_bridge/build install --record /workspace/Robocon25_codes/joy_py/build/joy_serial_bridge/install.log --single-version-externally-managed install_data
+[0.586s] running egg_info
+[0.586s] writing ../../build/joy_serial_bridge/joy_serial_bridge.egg-info/PKG-INFO
+[0.587s] writing dependency_links to ../../build/joy_serial_bridge/joy_serial_bridge.egg-info/dependency_links.txt
+[0.587s] writing entry points to ../../build/joy_serial_bridge/joy_serial_bridge.egg-info/entry_points.txt
+[0.587s] writing requirements to ../../build/joy_serial_bridge/joy_serial_bridge.egg-info/requires.txt
+[0.587s] writing top-level names to ../../build/joy_serial_bridge/joy_serial_bridge.egg-info/top_level.txt
+[0.588s] reading manifest file '../../build/joy_serial_bridge/joy_serial_bridge.egg-info/SOURCES.txt'
+[0.589s] writing manifest file '../../build/joy_serial_bridge/joy_serial_bridge.egg-info/SOURCES.txt'
+[0.589s] running build
+[0.589s] running build_py
+[0.589s] copying joy_serial_bridge/joy_to_ros.py -> /workspace/Robocon25_codes/joy_py/build/joy_serial_bridge/build/lib/joy_serial_bridge
+[0.589s] running install
+[0.590s] running install_lib
+[0.590s] copying /workspace/Robocon25_codes/joy_py/build/joy_serial_bridge/build/lib/joy_serial_bridge/joy_to_ros.py -> /workspace/Robocon25_codes/joy_py/install/joy_serial_bridge/lib/python3.10/site-packages/joy_serial_bridge
+[0.591s] byte-compiling /workspace/Robocon25_codes/joy_py/install/joy_serial_bridge/lib/python3.10/site-packages/joy_serial_bridge/joy_to_ros.py to joy_to_ros.cpython-310.pyc
+[0.591s] running install_data
+[0.591s] running install_egg_info
+[0.593s] removing '/workspace/Robocon25_codes/joy_py/install/joy_serial_bridge/lib/python3.10/site-packages/joy_serial_bridge-0.1.0-py3.10.egg-info' (and everything under it)
+[0.593s] Copying ../../build/joy_serial_bridge/joy_serial_bridge.egg-info to /workspace/Robocon25_codes/joy_py/install/joy_serial_bridge/lib/python3.10/site-packages/joy_serial_bridge-0.1.0-py3.10.egg-info
+[0.593s] running install_scripts
+[0.611s] Installing joy_to_ros script to /workspace/Robocon25_codes/joy_py/install/joy_serial_bridge/lib/joy_serial_bridge
+[0.611s] Installing joy_to_serial script to /workspace/Robocon25_codes/joy_py/install/joy_serial_bridge/lib/joy_serial_bridge
+[0.611s] writing list of installed files to '/workspace/Robocon25_codes/joy_py/build/joy_serial_bridge/install.log'
+[0.630s] Invoked command in '/workspace/Robocon25_codes/joy_py/src/joy_serial_bridge' returned '0': PYTHONPATH=/workspace/Robocon25_codes/joy_py/build/joy_serial_bridge/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/Robocon25_codes/joy_py/install/joy_serial_bridge/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/joy_serial_bridge build --build-base /workspace/Robocon25_codes/joy_py/build/joy_serial_bridge/build install --record /workspace/Robocon25_codes/joy_py/build/joy_serial_bridge/install.log --single-version-externally-managed install_data

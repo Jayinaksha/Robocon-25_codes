@@ -1,0 +1,30 @@
+smart_drive_bridge:
+  ros__parameters:
+    dev: '/dev/ttyUSB0'
+    baud: 115200
+    target_distance: 2.5  # meters
+    camera_angle: 55.0    # degrees
+    simulation_mode: true
+    
+    # Distance PID (forward/backward)
+    pid_distance_p: 0.5
+    pid_distance_i: 0.01
+    pid_distance_d: 0.1
+    
+    # Alignment PID (left/right)
+    pid_alignment_p: 0.4
+    pid_alignment_i: 0.0
+    pid_alignment_d: 0.05
+
+basketball_detector:
+  ros__parameters:
+    simulation_mode: true
+    model_path: 'yolov8n.pt'
+    detection_classes: ['sports ball', 'person']
+    detection_threshold: 0.5
+
+joy_node:
+  ros__parameters:
+    dev: '/dev/input/js0'
+    deadzone: 0.1
+    autorepeat_rate: 20.0

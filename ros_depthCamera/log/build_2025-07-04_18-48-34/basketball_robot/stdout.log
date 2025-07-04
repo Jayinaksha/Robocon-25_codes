@@ -1,0 +1,25 @@
+running egg_info
+writing ../../build/basketball_robot/basketball_robot.egg-info/PKG-INFO
+writing dependency_links to ../../build/basketball_robot/basketball_robot.egg-info/dependency_links.txt
+writing entry points to ../../build/basketball_robot/basketball_robot.egg-info/entry_points.txt
+writing requirements to ../../build/basketball_robot/basketball_robot.egg-info/requires.txt
+writing top-level names to ../../build/basketball_robot/basketball_robot.egg-info/top_level.txt
+reading manifest file '../../build/basketball_robot/basketball_robot.egg-info/SOURCES.txt'
+writing manifest file '../../build/basketball_robot/basketball_robot.egg-info/SOURCES.txt'
+running build
+running build_py
+copying basketball_robot/realsense_basket_detector.py -> /workspace/Robocon25_codes/ros_depthCamera/build/basketball_robot/build/lib/basketball_robot
+running install
+running install_lib
+copying /workspace/Robocon25_codes/ros_depthCamera/build/basketball_robot/build/lib/basketball_robot/realsense_basket_detector.py -> /workspace/Robocon25_codes/ros_depthCamera/install/basketball_robot/lib/python3.10/site-packages/basketball_robot
+byte-compiling /workspace/Robocon25_codes/ros_depthCamera/install/basketball_robot/lib/python3.10/site-packages/basketball_robot/realsense_basket_detector.py to realsense_basket_detector.cpython-310.pyc
+running install_data
+running install_egg_info
+removing '/workspace/Robocon25_codes/ros_depthCamera/install/basketball_robot/lib/python3.10/site-packages/basketball_robot-0.0.0-py3.10.egg-info' (and everything under it)
+Copying ../../build/basketball_robot/basketball_robot.egg-info to /workspace/Robocon25_codes/ros_depthCamera/install/basketball_robot/lib/python3.10/site-packages/basketball_robot-0.0.0-py3.10.egg-info
+running install_scripts
+Installing basketball_detector script to /workspace/Robocon25_codes/ros_depthCamera/install/basketball_robot/lib/basketball_robot
+Installing camera_display_node script to /workspace/Robocon25_codes/ros_depthCamera/install/basketball_robot/lib/basketball_robot
+Installing realsense_basket_detector script to /workspace/Robocon25_codes/ros_depthCamera/install/basketball_robot/lib/basketball_robot
+Installing smart_drive_bridge script to /workspace/Robocon25_codes/ros_depthCamera/install/basketball_robot/lib/basketball_robot
+writing list of installed files to '/workspace/Robocon25_codes/ros_depthCamera/build/basketball_robot/install.log'

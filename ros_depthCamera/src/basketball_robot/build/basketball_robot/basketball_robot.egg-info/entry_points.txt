@@ -1,0 +1,5 @@
+[console_scripts]
+basketball_detector = basketball_robot.basketball_detector:main
+camera_display_node = basketball_robot.camera_display_node:main
+smart_drive_bridge = basketball_robot.smart_drive_bridge:main
+

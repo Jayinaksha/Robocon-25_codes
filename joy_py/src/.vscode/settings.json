@@ -1,0 +1,12 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/noblehalogen/install/arenasim_pkg/lib/python3.10/site-packages",
+        "/home/noblehalogen/joy_serial_ws/install/joy_serial_bridge/lib/python3.12/site-packages",
+        "/opt/ros/jazzy/lib/python3.12/site-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/noblehalogen/install/arenasim_pkg/lib/python3.10/site-packages",
+        "/home/noblehalogen/joy_serial_ws/install/joy_serial_bridge/lib/python3.12/site-packages",
+        "/opt/ros/jazzy/lib/python3.12/site-packages"
+    ]
+}

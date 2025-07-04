@@ -1,0 +1,27 @@
+[0.589s] Invoking command in '/workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot': PYTHONPATH=/workspace/Robocon25_codes/ros_depthCamera/build/basketball_robot/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/Robocon25_codes/ros_depthCamera/install/basketball_robot/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/basketball_robot build --build-base /workspace/Robocon25_codes/ros_depthCamera/build/basketball_robot/build install --record /workspace/Robocon25_codes/ros_depthCamera/build/basketball_robot/install.log --single-version-externally-managed install_data
+[0.817s] running egg_info
+[0.817s] writing ../../build/basketball_robot/basketball_robot.egg-info/PKG-INFO
+[0.817s] writing dependency_links to ../../build/basketball_robot/basketball_robot.egg-info/dependency_links.txt
+[0.817s] writing entry points to ../../build/basketball_robot/basketball_robot.egg-info/entry_points.txt
+[0.818s] writing requirements to ../../build/basketball_robot/basketball_robot.egg-info/requires.txt
+[0.818s] writing top-level names to ../../build/basketball_robot/basketball_robot.egg-info/top_level.txt
+[0.819s] reading manifest file '../../build/basketball_robot/basketball_robot.egg-info/SOURCES.txt'
+[0.820s] writing manifest file '../../build/basketball_robot/basketball_robot.egg-info/SOURCES.txt'
+[0.820s] running build
+[0.820s] running build_py
+[0.820s] copying basketball_robot/realsense_basket_detector.py -> /workspace/Robocon25_codes/ros_depthCamera/build/basketball_robot/build/lib/basketball_robot
+[0.821s] running install
+[0.821s] running install_lib
+[0.822s] copying /workspace/Robocon25_codes/ros_depthCamera/build/basketball_robot/build/lib/basketball_robot/realsense_basket_detector.py -> /workspace/Robocon25_codes/ros_depthCamera/install/basketball_robot/lib/python3.10/site-packages/basketball_robot
+[0.822s] byte-compiling /workspace/Robocon25_codes/ros_depthCamera/install/basketball_robot/lib/python3.10/site-packages/basketball_robot/realsense_basket_detector.py to realsense_basket_detector.cpython-310.pyc
+[0.825s] running install_data
+[0.826s] running install_egg_info
+[0.827s] removing '/workspace/Robocon25_codes/ros_depthCamera/install/basketball_robot/lib/python3.10/site-packages/basketball_robot-0.0.0-py3.10.egg-info' (and everything under it)
+[0.828s] Copying ../../build/basketball_robot/basketball_robot.egg-info to /workspace/Robocon25_codes/ros_depthCamera/install/basketball_robot/lib/python3.10/site-packages/basketball_robot-0.0.0-py3.10.egg-info
+[0.828s] running install_scripts
+[0.849s] Installing basketball_detector script to /workspace/Robocon25_codes/ros_depthCamera/install/basketball_robot/lib/basketball_robot
+[0.849s] Installing camera_display_node script to /workspace/Robocon25_codes/ros_depthCamera/install/basketball_robot/lib/basketball_robot
+[0.849s] Installing realsense_basket_detector script to /workspace/Robocon25_codes/ros_depthCamera/install/basketball_robot/lib/basketball_robot
+[0.849s] Installing smart_drive_bridge script to /workspace/Robocon25_codes/ros_depthCamera/install/basketball_robot/lib/basketball_robot
+[0.849s] writing list of installed files to '/workspace/Robocon25_codes/ros_depthCamera/build/basketball_robot/install.log'
+[0.872s] Invoked command in '/workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot' returned '0': PYTHONPATH=/workspace/Robocon25_codes/ros_depthCamera/build/basketball_robot/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/Robocon25_codes/ros_depthCamera/install/basketball_robot/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/basketball_robot build --build-base /workspace/Robocon25_codes/ros_depthCamera/build/basketball_robot/build install --record /workspace/Robocon25_codes/ros_depthCamera/build/basketball_robot/install.log --single-version-externally-managed install_data

@@ -1,0 +1,44 @@
+running egg_info
+creating build/basketball_robot/basketball_robot.egg-info
+writing build/basketball_robot/basketball_robot.egg-info/PKG-INFO
+writing dependency_links to build/basketball_robot/basketball_robot.egg-info/dependency_links.txt
+writing entry points to build/basketball_robot/basketball_robot.egg-info/entry_points.txt
+writing requirements to build/basketball_robot/basketball_robot.egg-info/requires.txt
+writing top-level names to build/basketball_robot/basketball_robot.egg-info/top_level.txt
+writing manifest file 'build/basketball_robot/basketball_robot.egg-info/SOURCES.txt'
+reading manifest file 'build/basketball_robot/basketball_robot.egg-info/SOURCES.txt'
+writing manifest file 'build/basketball_robot/basketball_robot.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/build/basketball_robot/build
+creating /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/build/basketball_robot/build/lib
+creating /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/build/basketball_robot/build/lib/basketball_robot
+copying basketball_robot/smart_drive_bridge.py -> /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/build/basketball_robot/build/lib/basketball_robot
+copying basketball_robot/__init__.py -> /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/build/basketball_robot/build/lib/basketball_robot
+copying basketball_robot/basketball_detector.py -> /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/build/basketball_robot/build/lib/basketball_robot
+copying basketball_robot/drive_serial_bridge.py -> /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/build/basketball_robot/build/lib/basketball_robot
+running install
+running install_lib
+creating /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/install/basketball_robot/lib/python3.10/site-packages/basketball_robot
+copying /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/build/basketball_robot/build/lib/basketball_robot/smart_drive_bridge.py -> /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/install/basketball_robot/lib/python3.10/site-packages/basketball_robot
+copying /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/build/basketball_robot/build/lib/basketball_robot/__init__.py -> /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/install/basketball_robot/lib/python3.10/site-packages/basketball_robot
+copying /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/build/basketball_robot/build/lib/basketball_robot/basketball_detector.py -> /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/install/basketball_robot/lib/python3.10/site-packages/basketball_robot
+copying /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/build/basketball_robot/build/lib/basketball_robot/drive_serial_bridge.py -> /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/install/basketball_robot/lib/python3.10/site-packages/basketball_robot
+byte-compiling /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/install/basketball_robot/lib/python3.10/site-packages/basketball_robot/smart_drive_bridge.py to smart_drive_bridge.cpython-310.pyc
+byte-compiling /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/install/basketball_robot/lib/python3.10/site-packages/basketball_robot/__init__.py to __init__.cpython-310.pyc
+byte-compiling /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/install/basketball_robot/lib/python3.10/site-packages/basketball_robot/basketball_detector.py to basketball_detector.cpython-310.pyc
+byte-compiling /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/install/basketball_robot/lib/python3.10/site-packages/basketball_robot/drive_serial_bridge.py to drive_serial_bridge.cpython-310.pyc
+running install_data
+creating /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/install/basketball_robot/share/ament_index
+creating /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/install/basketball_robot/share/ament_index/resource_index
+creating /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/install/basketball_robot/share/ament_index/resource_index/packages
+copying resource/basketball_robot -> /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/install/basketball_robot/share/ament_index/resource_index/packages
+copying package.xml -> /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/install/basketball_robot/share/basketball_robot
+copying launch/basketball_robot.launch.py -> /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/install/basketball_robot/share/basketball_robot
+running install_egg_info
+Copying build/basketball_robot/basketball_robot.egg-info to /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/install/basketball_robot/lib/python3.10/site-packages/basketball_robot-0.0.0-py3.10.egg-info
+running install_scripts
+Installing basketball_detector script to /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/install/basketball_robot/lib/basketball_robot
+Installing camera_display_node script to /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/install/basketball_robot/lib/basketball_robot
+Installing smart_drive_bridge script to /workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/install/basketball_robot/lib/basketball_robot
+writing list of installed files to '/workspace/Robocon25_codes/ros_depthCamera/src/basketball_robot/build/basketball_robot/install.log'
