@@ -62,7 +62,14 @@ This project features an ESP32-based joystick data receiver integrated with a RO
 1. Open the Arduino IDE and load the `joy_serial_receiver.ino` file provided in this repository.
 2. Configure the serial monitor baud rate to `115200`.
 3. Upload the code to the ESP32.
-
+##Download teleop package
+   ```bash
+   sudo apt install ros-humble-joy-teleop
+   ```
+   Or
+   ```bash
+   sudo apt install ros-jazzy-joy-teleop
+   ```
 ## Usage
 
 ### Starting ROS 2 Nodes
