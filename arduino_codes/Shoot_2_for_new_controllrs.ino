@@ -16,8 +16,8 @@ const int shoot_speed1 = 50;
 const int shoot_speed2 = 80;
 const int shoot_speed3 = 120;
 
-const int initial_angle = 0;
-const int shoot_angle = 100;
+const int initial_angle = 100;
+const int shoot_angle = 0;
 const int shoot_delay = 1000;
 
 const int MAX_AXES = 8;
