@@ -3,3 +3,6 @@ log/*
 build/*
 realsense_env/*
 'ML Model'/*
+ros_depthCamera/build/*
+ros_depthCamera/log/*
+ros_depthCamera/install/*
