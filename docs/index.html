@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Robocon 25 — Basketball Robot</title>
+<meta name="description" content="ROS 2 + Arduino control stack for a two-robot basketball system: holonomic drive, depth-camera hoop detection, PID auto-alignment and a flywheel shooter.">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23ff7a1a'/><path d='M50 4v92M4 50h92' stroke='%23000' stroke-width='7' opacity='.5'/></svg>">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html"><span class="brand-dot"></span> Robocon 25</a>
+    <div class="nav-links">
+      <a href="index.html" aria-current="page">Overview</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="simulations.html">Simulations</a>
+      <a href="code.html">Code</a>
+      <a href="media.html">Footage</a>
+      <a href="https://github.com/Jayinaksha/Robocon-25_codes">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">ABU Robocon 2025 · Basketball</div>
+    <h1>A two-robot basketball<br>control stack.</h1>
+    <p class="lede">
+      Holonomic four-wheel drive, a depth-camera hoop detector, a PID alignment loop
+      and a three-preset flywheel shooter — split across a ROS 2 host and four Arduino Mega
+      boards, all talking over one deliberately simple serial line.
+    </p>
+
+    <div class="hero-meta">
+      <span class="chip"><strong>2</strong> robots</span>
+      <span class="chip"><strong>4</strong> Arduino boards</span>
+      <span class="chip"><strong>~7,100</strong> lines</span>
+      <span class="chip">ROS 2 <strong>Humble/Jazzy</strong></span>
+      <span class="chip">RealSense <strong>D455</strong></span>
+      <span class="chip">YOLO <strong>last.pt</strong></span>
+    </div>
+
+    <div class="btn-row">
+      <a class="btn btn-primary" href="architecture.html">See how it fits together →</a>
+      <a class="btn" href="simulations.html">Run the simulations</a>
+      <a class="btn" href="code.html">Read the code review</a>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">The loop</div>
+    <h2>From joystick to flywheel in four hops</h2>
+    <p class="lede">
+      Every command — human or autonomous — takes the same path. That single choice is what
+      lets the same firmware serve both manual driving and vision-guided alignment.
+    </p>
+
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 250" role="img" aria-label="Pipeline: joystick and camera feed into a ROS host, which sends one serial line to the drive and shoot Arduinos.">
+          <!-- nodes -->
+          <rect class="svg-box" x="8" y="30" width="132" height="62" rx="10"/>
+          <text class="svg-label" x="74" y="56" text-anchor="middle">PS4 pad</text>
+          <text class="svg-sub" x="74" y="74" text-anchor="middle">joy_node</text>
+
+          <rect class="svg-box" x="8" y="140" width="132" height="62" rx="10"/>
+          <text class="svg-label" x="74" y="166" text-anchor="middle">RealSense D455</text>
+          <text class="svg-sub" x="74" y="184" text-anchor="middle">colour + depth</text>
+
+          <rect class="svg-box-accent" x="252" y="78" width="176" height="86" rx="10"/>
+          <text class="svg-label" x="340" y="106" text-anchor="middle">ROS 2 host</text>
+          <text class="svg-sub" x="340" y="124" text-anchor="middle">detector + PID</text>
+          <text class="svg-sub" x="340" y="140" text-anchor="middle">smart_drive_bridge</text>
+
+          <rect class="svg-box" x="540" y="78" width="150" height="86" rx="10"/>
+          <text class="svg-label" x="615" y="108" text-anchor="middle">Serial line</text>
+          <text class="svg-sub" x="615" y="128" text-anchor="middle">115200 baud</text>
+          <text class="svg-sub" x="615" y="144" text-anchor="middle">"axes;buttons\n"</text>
+
+          <rect class="svg-box" x="778" y="24" width="114" height="72" rx="10"/>
+          <text class="svg-label" x="835" y="52" text-anchor="middle">Drive Mega</text>
+          <text class="svg-sub" x="835" y="70" text-anchor="middle">4 wheels</text>
+
+          <rect class="svg-box" x="778" y="148" width="114" height="72" rx="10"/>
+          <text class="svg-label" x="835" y="176" text-anchor="middle">Shoot Mega</text>
+          <text class="svg-sub" x="835" y="194" text-anchor="middle">flywheel + servo</text>
+
+          <!-- edges -->
+          <path class="svg-edge" d="M140 61 H196 Q210 61 210 82 V112 H252"/>
+          <path class="svg-edge-live" d="M140 171 H196 Q210 171 210 150 V130 H252"/>
+          <path class="svg-edge" d="M428 121 H540"/>
+          <path class="svg-edge" d="M690 111 Q734 111 734 78 V60 H778"/>
+          <path class="svg-edge" d="M690 131 Q734 131 734 164 V184 H778"/>
+
+          <text class="svg-edge-txt" x="150" y="52">/joy</text>
+          <text class="svg-edge-txt" x="150" y="205">/value_x /value_y</text>
+          <text class="svg-edge-txt" x="452" y="112">one line, 20 Hz</text>
+        </svg>
+      </div>
+      <figcaption>
+        <strong>The whole system.</strong> The vision branch (orange) does not get its own protocol —
+        it overwrites two axis slots in the same joystick packet the human would have sent.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Subsystems</div>
+    <h2>Four pieces worth understanding</h2>
+    <div class="grid g2" style="margin-top:1.5rem">
+
+      <a class="card card-link" href="architecture.html#drive">
+        <h3>Holonomic drive</h3>
+        <p>
+          Four wheels on a cross, each with a PWM pin and a direction pin. The firmware resolves a
+          joystick vector into one of ten discrete cases — four quadrants, four axis-aligned moves and
+          two rotations — rather than a continuous mixing matrix.
+        </p>
+        <p class="srcref">arduino_codes/Drive_1_for_new_controllers.ino</p>
+      </a>
+
+      <a class="card card-link" href="architecture.html#vision">
+        <h3>Hoop detection</h3>
+        <p>
+          A YOLO model (<code>last.pt</code>) runs on the D455 colour stream at ~30 FPS. The box centre is
+          sampled against the aligned depth frame over an 11×11 window, outliers trimmed, and the mean
+          taken as range to the hoop.
+        </p>
+        <p class="srcref">basketball_robot/realsense_basket_detector.py</p>
+      </a>
+
+      <a class="card card-link" href="architecture.html#align">
+        <h3>PID auto-alignment</h3>
+        <p>
+          Two independent PID controllers — one on horizontal pixel offset, one on range error — produce
+          a pair of normalised values clamped to ±0.5, which the bridge injects into axes 2 and 3 of the
+          outgoing packet.
+        </p>
+        <p class="srcref">smart_drive_bridge.py · Drive_with_auto.ino</p>
+      </a>
+
+      <a class="card card-link" href="architecture.html#shoot">
+        <h3>Flywheel shooter</h3>
+        <p>
+          Two counter-rotating flywheels at one of three PWM presets, a servo that flicks the ball in,
+          and a separate motor that tilts the launch angle. Autonomous shots run a timed three-stage
+          state machine gated on an explicit permission button.
+        </p>
+        <p class="srcref">arduino_codes/_shoot_with_auto/_shoot_with_auto.ino</p>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">By the numbers</div>
+    <h2>Tuned constants, as committed</h2>
+    <p>Every value here is read straight out of the source — not a spec sheet. Where the two robots differ, both are listed.</p>
+    <div class="grid g4" style="margin-top:1.6rem">
+      <div class="card stat"><span class="num">180</span><span class="lbl">Drive PWM ceiling (of 255)</span></div>
+      <div class="card stat"><span class="num">100</span><span class="lbl">Rotation PWM</span></div>
+      <div class="card stat"><span class="num">60/40</span><span class="lbl">Auto translate / rotate PWM</span></div>
+      <div class="card stat"><span class="num">5.726 m</span><span class="lbl">Target shooting range</span></div>
+      <div class="card stat"><span class="num">55°</span><span class="lbl">Camera / launch angle</span></div>
+      <div class="card stat"><span class="num">0.5</span><span class="lbl">Kp, both axes</span></div>
+      <div class="card stat"><span class="num">±0.5</span><span class="lbl">PID output clamp</span></div>
+      <div class="card stat"><span class="num">30 Hz</span><span class="lbl">Detection loop</span></div>
+    </div>
+
+    <div class="note" style="margin-top:1.8rem">
+      <div class="note-title">The shooter presets are not the same on both robots</div>
+      <p>
+        Bot 1 fires at PWM 100 / 120 / 150 from a 90° servo rest position; bot 2 at 50 / 80 / 120 from 100°.
+        The pin maps differ too — see the <a href="architecture.html#pins">pin tables</a>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Review</div>
+    <h2>Twelve findings from reading it end to end</h2>
+    <p class="lede">
+      Reading all four firmware variants and six ROS nodes side by side surfaces real inconsistencies —
+      a distance target that resolves to the wrong number, a PID that advances twice per frame, and two
+      override buttons that latch on different indices.
+    </p>
+    <div class="btn-row" style="margin-top:1.4rem">
+      <a class="btn btn-primary" href="code.html#findings">Read all twelve →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-grid">
+    <div>
+      Robocon 25 · basketball robot control stack<br>
+      <a href="https://github.com/Jayinaksha/Robocon-25_codes">Jayinaksha/Robocon-25_codes</a>
+    </div>
+    <div>Built from the source in this repository.</div>
+  </div>
+</footer>
+
+</body>
+</html>

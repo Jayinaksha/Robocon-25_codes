@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Footage — Robocon 25</title>
+<meta name="description" content="The detector's on-screen overlay reconstructed from its own drawing calls, plus annotated match footage.">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23ff7a1a'/><path d='M50 4v92M4 50h92' stroke='%23000' stroke-width='7' opacity='.5'/></svg>">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html"><span class="brand-dot"></span> Robocon 25</a>
+    <div class="nav-links">
+      <a href="index.html">Overview</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="simulations.html">Simulations</a>
+      <a href="code.html">Code</a>
+      <a href="media.html" aria-current="page">Footage</a>
+      <a href="https://github.com/Jayinaksha/Robocon-25_codes">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" style="padding-bottom:2rem">
+  <div class="wrap">
+    <div class="eyebrow">Footage</div>
+    <h1>What the robot sees</h1>
+    <p class="lede">
+      The detector paints its own diagnostic overlay on every frame — box, centre dot, four labels and a
+      translucent status bar. Below, that overlay is rebuilt from the exact <code>cv2</code> calls in the
+      node, so you can drag the range and watch the moment it declares itself positioned.
+    </p>
+  </div>
+</header>
+
+<section id="hud">
+  <div class="wrap">
+    <div class="eyebrow">01 — Detector overlay</div>
+    <h2>The HUD, reconstructed</h2>
+    <p>
+      Every element here is drawn where the node draws it: the box turns green only when
+      <code>|distance_error| &lt; 0.1</code>, the labels stack upward from <code>y1 − 10</code> in 20 px
+      steps, and the status line flips only when the range <em>and</em> the horizontal offset are both
+      inside tolerance.
+    </p>
+
+    <div class="note warn">
+      <div class="note-title">This is a reconstruction, not a camera capture</div>
+      <p>
+        The background is schematic. The overlay geometry, colours, text format and thresholds are taken
+        from <span class="srcref">realsense_basket_detector.py:333–431</span>; the scene behind it is
+        drawn to give the overlay something to sit on.
+      </p>
+    </div>
+
+    <div class="sim">
+      <div class="sim-head">
+        <h3>Basketball Detection — 640 × 480</h3>
+        <span class="srcref">as drawn by the node</span>
+      </div>
+      <div class="sim-body">
+        <div class="sim-stage">
+          <canvas id="hudCanvas" width="640" height="480"></canvas>
+        </div>
+        <div class="sim-panel">
+          <div class="ctrl">
+            <label for="hudDist">measured range <span class="val" id="hudDistVal">4.20 m</span></label>
+            <input type="range" id="hudDist" min="1.5" max="7" step="0.01" value="4.2">
+          </div>
+          <div class="ctrl">
+            <label for="hudHoriz">horizontal_position <span class="val" id="hudHorizVal">-0.31</span></label>
+            <input type="range" id="hudHoriz" min="-1" max="1" step="0.01" value="-0.31">
+          </div>
+          <p style="font-size:.76rem; color:var(--ink-faint); margin:-.2rem 0 1rem">
+            Positive means the hoop is to the <b>left</b> — the sign is flipped on
+            <span class="srcref">:315</span>.
+          </p>
+
+          <div class="readout">
+            <div class="hl"><span>status line</span><b id="hudState">—</b></div>
+            <div><span>distance_error</span><b id="hudErr">—</b></div>
+            <div><span>value_x</span><b id="hudVx">—</b></div>
+            <div><span>value_y</span><b id="hudVy">—</b></div>
+            <div><span>setpoint</span><b>3.28 m</b></div>
+          </div>
+
+          <div class="note bug" style="font-size:.78rem; margin-top:1rem">
+            <b>Slide the range to 3.28 m</b> — that is where the loop settles, not the 5.726 m named in
+            <code>target_distance</code>. See <a href="code.html#f1">finding 1</a>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="clips">
+  <div class="wrap">
+    <div class="eyebrow">02 — Match footage</div>
+    <h2>Annotated clips</h2>
+    <p class="lede">
+      Each clip carries a timed annotation track: boxes and captions appear over the video as playback
+      reaches them, and the chapter buttons seek straight to a moment.
+    </p>
+
+    <div class="note">
+      <div class="note-title">Waiting on the video files</div>
+      <p>
+        The clips live in Google Drive — <code>Old_drive_refactor / Project_documentation / Robocon 2025</code>
+        — and this build could not read them: the sandbox blocked the authenticated download, and the
+        sharing tool available here can only grant access per person, not "anyone with the link".
+      </p>
+      <p style="margin-top:.6rem">
+        <b>To light this section up:</b> open each clip in Drive → <b>Share</b> → <b>General access</b> →
+        <b>Anyone with the link</b>, or drop the <code>.mp4</code> files into
+        <code>docs/assets/media/</code> with the filenames below. The player, the overlay engine and the
+        annotation tracks are already in place — the page switches from placeholder to video the moment a
+        file resolves.
+      </p>
+    </div>
+
+    <!-- ── clip 1 ── -->
+    <h3 style="margin-top:2.5rem">Robots in action</h3>
+    <figure class="media-figure" data-annotated style="display:none">
+      <video controls playsinline preload="metadata" poster="assets/img/poster-action.jpg">
+        <source src="assets/media/robots-in-action.mp4" type="video/mp4">
+      </video>
+      <div class="anno-layer"></div>
+      <script type="application/json">
+      {
+        "annotations": [
+          { "start": 0, "end": 4, "label": "Drive",
+            "note": "Manual drive under the quadrant ladder — translation only, since rotation sits below it in the if/else chain.",
+            "boxes": [ { "x": 30, "y": 40, "w": 26, "h": 34, "label": "bot 1", "colour": "cyan" } ] },
+          { "start": 4, "end": 9, "label": "Approach",
+            "note": "Closing on the hoop. In auto mode this is where value_y would act — except the range branch never runs.",
+            "boxes": [ { "x": 44, "y": 22, "w": 18, "h": 20, "label": "hoop" } ] },
+          { "start": 9, "end": 14, "label": "Shot",
+            "note": "Flywheels at a speed preset, then the servo flicks the ball in. The loop blocks for roughly a second here.",
+            "boxes": [ { "x": 36, "y": 30, "w": 22, "h": 28, "label": "shooter", "colour": "green" } ] }
+        ]
+      }
+      </script>
+    </figure>
+    <div class="slot">
+      <div class="slot-icon">🎬</div>
+      <p><b>robots-in-action.mp4</b> — drop in <code>docs/assets/media/</code></p>
+      <p style="color:var(--ink-faint)">Drive source: “DD Robocon25 Robots in Action” · 4.6 MB</p>
+    </div>
+    <p class="anno-caption" style="min-height:1.6rem; font-size:.88rem; color:var(--ink-dim); margin-top:.8rem"></p>
+    <div class="anno-timeline" style="display:flex; gap:.4rem; flex-wrap:wrap; margin-top:.4rem"></div>
+
+    <!-- ── clip 2 ── -->
+    <h3 style="margin-top:2.5rem">Shooting mechanism, close up</h3>
+    <figure class="media-figure" data-annotated style="display:none">
+      <video controls playsinline preload="metadata" poster="assets/img/poster-shoot.jpg">
+        <source src="assets/media/shooting-mechanism.mp4" type="video/mp4">
+      </video>
+      <div class="anno-layer"></div>
+      <script type="application/json">
+      {
+        "annotations": [
+          { "start": 0, "end": 3, "label": "Rest",
+            "note": "Servo at its rest angle — 90° on bot 1, 100° on bot 2.",
+            "boxes": [ { "x": 42, "y": 46, "w": 16, "h": 18, "label": "trigger servo", "colour": "violet" } ] },
+          { "start": 3, "end": 7, "label": "Spin-up",
+            "note": "Two counter-rotating flywheels reach the preset PWM. The state machine allows 2000 ms for this.",
+            "boxes": [ { "x": 28, "y": 34, "w": 20, "h": 24, "label": "flywheel L", "colour": "cyan" },
+                       { "x": 54, "y": 34, "w": 20, "h": 24, "label": "flywheel R", "colour": "cyan" } ] },
+          { "start": 7, "end": 11, "label": "Release",
+            "note": "Servo sweeps 90° → 0° → 90° in 5° steps at 15 ms each, then a flat 1000 ms delay.",
+            "boxes": [ { "x": 40, "y": 40, "w": 22, "h": 26, "label": "release", "colour": "green" } ] }
+        ]
+      }
+      </script>
+    </figure>
+    <div class="slot">
+      <div class="slot-icon">🎬</div>
+      <p><b>shooting-mechanism.mp4</b> — drop in <code>docs/assets/media/</code></p>
+      <p style="color:var(--ink-faint)">Drive source: “Team Pheonix shooting mechanism” · 5.4 MB</p>
+    </div>
+    <p class="anno-caption" style="min-height:1.6rem; font-size:.88rem; color:var(--ink-dim); margin-top:.8rem"></p>
+    <div class="anno-timeline" style="display:flex; gap:.4rem; flex-wrap:wrap; margin-top:.4rem"></div>
+
+    <div class="note warn" style="margin-top:2.5rem">
+      <div class="note-title">Check the attribution before this goes out</div>
+      <p>
+        Two of the Drive clips are named “Team Pheonix”. If that is another team's robot rather than
+        yours, relabel or drop those clips before sharing the site — the annotation text above assumes
+        they show your mechanism, and I could not verify that without watching them.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="track-format">
+  <div class="wrap">
+    <div class="eyebrow">03 — Reference</div>
+    <h2>Annotation track format</h2>
+    <p>
+      Tracks are inline JSON inside each figure. Coordinates are percentages of the video frame, so they
+      survive any resize. Add, edit or retime an annotation by editing this block — no build step.
+    </p>
+    <pre>{
+  <span class="s">"annotations"</span>: [
+    {
+      <span class="s">"start"</span>: <span class="n">4</span>,                  <span class="c">// seconds</span>
+      <span class="s">"end"</span>:   <span class="n">9</span>,
+      <span class="s">"label"</span>: <span class="s">"Approach"</span>,        <span class="c">// chapter button text</span>
+      <span class="s">"note"</span>:  <span class="s">"Closing on the hoop…"</span>,
+      <span class="s">"boxes"</span>: [
+        { <span class="s">"x"</span>: <span class="n">44</span>, <span class="s">"y"</span>: <span class="n">22</span>, <span class="s">"w"</span>: <span class="n">18</span>, <span class="s">"h"</span>: <span class="n">20</span>,
+          <span class="s">"label"</span>: <span class="s">"hoop"</span>, <span class="s">"colour"</span>: <span class="s">"cyan"</span> }
+      ]
+    }
+  ]
+}</pre>
+    <p style="font-size:.85rem">
+      <code>colour</code> accepts <code>cyan</code>, <code>green</code>, <code>violet</code> or is
+      omitted for the default orange. Boxes with no <code>label</code> render without a tag.
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-grid">
+    <div>
+      Robocon 25 · basketball robot control stack<br>
+      <a href="https://github.com/Jayinaksha/Robocon-25_codes">Jayinaksha/Robocon-25_codes</a>
+    </div>
+    <div><a href="index.html">Back to the overview →</a></div>
+  </div>
+</footer>
+
+<script src="assets/js/media.js"></script>
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulations — Robocon 25</title>
+<meta name="description" content="Three interactive simulations built from the committed firmware: the drive mixer, the PID alignment loop and the shooter trajectory model.">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23ff7a1a'/><path d='M50 4v92M4 50h92' stroke='%23000' stroke-width='7' opacity='.5'/></svg>">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html"><span class="brand-dot"></span> Robocon 25</a>
+    <div class="nav-links">
+      <a href="index.html">Overview</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="simulations.html" aria-current="page">Simulations</a>
+      <a href="code.html">Code</a>
+      <a href="media.html">Footage</a>
+      <a href="https://github.com/Jayinaksha/Robocon-25_codes">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" style="padding-bottom:2rem">
+  <div class="wrap">
+    <div class="eyebrow">Simulations</div>
+    <h1>Run the firmware<br>without the robot</h1>
+    <p class="lede">
+      The first two simulators are direct ports of the committed control logic — the same if/else
+      ladder, the same integer <code>map()</code>, the same axis indices. That makes them useful for
+      more than illustration: the behaviour you see is the behaviour that was uploaded.
+    </p>
+    <div class="note" style="max-width:64ch">
+      <div class="note-title">What is ported and what is modelled</div>
+      <p>
+        <b>Ported exactly:</b> the drive decision ladder, Arduino's <code>map()</code> truncation, the
+        PID class, the error terms, the <code>pid()</code> auto mixer and every PWM constant.
+        <b>Modelled:</b> how PWM becomes metres per second, and how flywheel PWM becomes exit velocity.
+        Those two constants are calibration sliders — nothing in the repository measures them.
+      </p>
+    </div>
+  </div>
+</header>
+
+<section id="drive">
+  <div class="wrap">
+    <div class="eyebrow">Simulator 01</div>
+    <h2>Drive mixer</h2>
+    <p>
+      Drag the stick. Each wheel shows the PWM the firmware would write and the direction bit that
+      accompanies it; the branch name above the robot is the exact <code>else if</code> that matched.
+      Try the rotation triggers at partial travel.
+    </p>
+
+    <div class="sim">
+      <div class="sim-head">
+        <h3>controlMotors() — Drive_1_for_new_controllers.ino</h3>
+        <button class="btn-sm" id="dvOverride">Override OFF</button>
+      </div>
+      <div class="sim-body">
+        <div class="sim-stage">
+          <canvas id="driveCanvas" width="660" height="360"></canvas>
+        </div>
+        <div class="sim-panel">
+          <div class="ctrl">
+            <label for="dvCcwIn">axes[4] — rotate CCW trigger <span class="val" id="dvCcwVal">1.00</span></label>
+            <input type="range" id="dvCcwIn" min="-1" max="1" step="0.01" value="1">
+          </div>
+          <div class="ctrl">
+            <label for="dvCwIn">axes[5] — rotate CW trigger <span class="val" id="dvCwVal">1.00</span></label>
+            <input type="range" id="dvCwIn" min="-1" max="1" step="0.01" value="1">
+          </div>
+          <p style="font-size:.76rem; color:var(--ink-faint); margin:-.2rem 0 1rem">
+            Triggers rest at <code>+1.0</code> and travel to <code>−1.0</code> when pressed.
+          </p>
+
+          <div class="readout">
+            <div class="hl"><span>branch</span><b id="dvBranch">Stop</b></div>
+            <div><span>x = axes[0] × 180</span><b id="dvX">0</b></div>
+            <div><span>y = axes[1] × 180</span><b id="dvY">0</b></div>
+            <div><span>rotAnticlock</span><b id="dvCcw">0</b></div>
+            <div><span>rotclock</span><b id="dvCw">0</b></div>
+            <div><span>M1·M2·M3·M4</span><b id="dvPwm">0 · 0 · 0 · 0</b></div>
+          </div>
+          <div class="note warn" id="dvWarn" style="display:none; font-size:.8rem; margin-top:1rem"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:1.4rem">
+      <div class="card">
+        <h3>Rotation is unreachable while translating</h3>
+        <p>
+          The two rotation branches sit below all eight translation branches. Any non-zero stick
+          deflection — after the 0.1 deadzone — wins, so you cannot strafe and spin at once.
+          For a holonomic base that is a real capability left on the table.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Straight moves only drive one pair</h3>
+        <p>
+          On a pure +x move the firmware writes <code>M2 = M4 = 0</code> and leaves their direction
+          pins untouched. The idle pair still contributes drag, which is part of why the robot
+          creeps off a straight line over a long run.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pid">
+  <div class="wrap">
+    <div class="eyebrow">Simulator 02</div>
+    <h2>Vision alignment loop</h2>
+    <p>
+      Click anywhere on the court to drop the robot there and watch the loop close. The cyan cone is
+      the D455's ~69° horizontal field of view; the green arc is the distance setpoint the controller
+      is actually chasing.
+    </p>
+
+    <div class="sim">
+      <div class="sim-head">
+        <h3>realsense_basket_detector.py → pid() in Drive_with_auto.ino</h3>
+        <div style="display:flex; gap:.4rem; flex-wrap:wrap">
+          <button class="btn-sm on" id="pdRun">Pause</button>
+          <button class="btn-sm" id="pdReset">Reset</button>
+          <button class="btn-sm" id="pdMode">As committed</button>
+        </div>
+      </div>
+      <div class="sim-body">
+        <div class="sim-stage">
+          <canvas id="pidCanvas" width="680" height="340"></canvas>
+        </div>
+        <div class="sim-panel">
+          <div class="ctrl">
+            <label for="pdKpx">x_kp — horizontal <span class="val" id="pdKpxVal">0.50</span></label>
+            <input type="range" id="pdKpx" min="0" max="2" step="0.05" value="0.5">
+          </div>
+          <div class="ctrl">
+            <label for="pdKpy">y_kp — range <span class="val" id="pdKpyVal">0.50</span></label>
+            <input type="range" id="pdKpy" min="0" max="2" step="0.05" value="0.5">
+          </div>
+          <div class="ctrl">
+            <label for="pdKi">ki — both <span class="val" id="pdKiVal">0.000</span></label>
+            <input type="range" id="pdKi" min="0" max="0.5" step="0.005" value="0">
+          </div>
+          <div class="ctrl">
+            <label for="pdKd">kd — both <span class="val" id="pdKdVal">0.000</span></label>
+            <input type="range" id="pdKd" min="0" max="0.4" step="0.005" value="0">
+          </div>
+          <div class="ctrl">
+            <label for="pdTarget">target_distance <span class="val" id="pdTargetVal">5.73 m</span></label>
+            <input type="range" id="pdTarget" min="1" max="8" step="0.05" value="5.726">
+          </div>
+          <button class="btn-sm" id="pdCos" style="width:100%; margin-bottom:1rem">Setpoint × cos(55°)</button>
+
+          <div class="readout">
+            <div class="hl"><span>status</span><b id="pdStatus">ADJUSTING</b></div>
+            <div><span>range</span><b id="pdRange">—</b></div>
+            <div><span>setpoint</span><b id="pdSet">—</b></div>
+            <div><span>horizontal_position</span><b id="pdHoriz">—</b></div>
+            <div><span>distance_error</span><b id="pdErr">—</b></div>
+            <div><span>value_x</span><b id="pdVx">—</b></div>
+            <div><span>value_y</span><b id="pdVy">—</b></div>
+          </div>
+          <div class="note bug" id="pdDiag" style="font-size:.78rem; margin-top:1rem"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note bug">
+      <div class="note-title">What this simulator is really showing</div>
+      <p>
+        Leave it on <b>As committed</b> and the robot will centre itself and then sit at the wrong
+        range indefinitely. Two committed details cause that, and you can toggle each one:
+      </p>
+      <ul class="tight" style="margin-top:.6rem">
+        <li><b>The setpoint is cosine-corrected but the measurement is not.</b> 5.726 m becomes 3.284 m
+          on the setpoint side, while the cosine on the measured side is commented out
+          (<span class="srcref">realsense_basket_detector.py:311</span>).</li>
+        <li><b>The range branch never runs.</b> <code>pid()</code> tests <code>axes[3]</code> only after
+          <code>axes[2] == 0</code> exactly (<span class="srcref">Drive_with_auto.ino:323</span>), and a
+          float PID output is essentially never exactly zero.</li>
+      </ul>
+      <p style="margin-top:.6rem">
+        Switch to <b>Corrected mapping</b> to see the same gains converge cleanly.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="shoot">
+  <div class="wrap">
+    <div class="eyebrow">Simulator 03</div>
+    <h2>Shooter trajectory</h2>
+    <p>
+      The three PWM presets and the 55° launch angle come from the firmware. The conversion from PWM to
+      ball speed does not exist anywhere in the repository, so it is exposed as a calibration constant —
+      set it from one measured shot and the rest of the curve follows.
+    </p>
+
+    <div class="sim">
+      <div class="sim-head">
+        <h3>Ballistics from the committed presets</h3>
+        <div style="display:flex; gap:.4rem; flex-wrap:wrap">
+          <button class="btn-sm on" data-bot="bot1">Bot 1</button>
+          <button class="btn-sm" data-bot="bot2">Bot 2</button>
+        </div>
+      </div>
+      <div class="sim-body">
+        <div class="sim-stage">
+          <canvas id="shootCanvas" width="700" height="330"></canvas>
+        </div>
+        <div class="sim-panel">
+          <div style="display:flex; gap:.4rem; margin-bottom:1rem; flex-wrap:wrap">
+            <button class="btn-sm" data-preset="0">PWM 100</button>
+            <button class="btn-sm" data-preset="1">PWM 120</button>
+            <button class="btn-sm on" data-preset="2">PWM 150</button>
+          </div>
+
+          <div class="ctrl">
+            <label for="shTrim">trim — buttons 11/12 <span class="val" id="shTrimVal">+0</span></label>
+            <input type="range" id="shTrim" min="-60" max="80" step="10" value="0">
+          </div>
+          <div class="ctrl">
+            <label for="shAngle">launch angle <span class="val" id="shAngleVal">55°</span></label>
+            <input type="range" id="shAngle" min="20" max="75" step="1" value="55">
+          </div>
+          <div class="ctrl">
+            <label for="shKv">calibration — m/s per PWM <span class="val" id="shKvVal">0.057</span></label>
+            <input type="range" id="shKv" min="0.02" max="0.12" step="0.001" value="0.057">
+          </div>
+          <div class="ctrl">
+            <label for="shRange">range to hoop <span class="val" id="shRangeVal">5.73 m</span></label>
+            <input type="range" id="shRange" min="2" max="8" step="0.05" value="5.726">
+          </div>
+          <div class="ctrl">
+            <label for="shRim">rim height <span class="val" id="shRimVal">2.43 m</span></label>
+            <input type="range" id="shRim" min="1.5" max="3.5" step="0.01" value="2.43">
+          </div>
+
+          <div class="readout">
+            <div class="hl"><span>verdict</span><b id="shVerdict">—</b></div>
+            <div><span>PWM written</span><b id="shPwm">150</b></div>
+            <div><span>exit speed</span><b id="shV0">—</b></div>
+            <div><span>time to rim plane</span><b id="shTof">—</b></div>
+            <div><span>height at rim</span><b id="shAtRim">—</b></div>
+            <div><span>needed for this shot</span><b id="shReq">—</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid g2" style="margin-top:1.4rem">
+      <div class="card">
+        <h3>The trim has no ceiling</h3>
+        <p>
+          Buttons 11 and 12 add or subtract 10 PWM per press with no clamp
+          (<span class="srcref">_shoot_with_auto.ino:424</span>). Eleven presses on bot 1's top preset
+          exceeds the 255 write limit and silently wraps the <code>analogWrite</code> argument.
+          Any preset button resets the trim to zero.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Angle is open loop</h3>
+        <p>
+          The tilt motor runs while a button is held with no encoder, limit switch or feedback of any
+          kind, so the 55° in the vision node is an assumption about where the mechanism happens to be
+          — not a commanded state the software can verify.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-grid">
+    <div>
+      Robocon 25 · basketball robot control stack<br>
+      <a href="https://github.com/Jayinaksha/Robocon-25_codes">Jayinaksha/Robocon-25_codes</a>
+    </div>
+    <div><a href="code.html">Next: the code review →</a></div>
+  </div>
+</footer>
+
+<script src="assets/js/sim-drive.js"></script>
+<script src="assets/js/sim-pid.js"></script>
+<script src="assets/js/sim-shoot.js"></script>
+</body>
+</html>
