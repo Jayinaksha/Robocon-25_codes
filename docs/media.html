@@ -110,15 +110,15 @@
       <div class="note-title">Waiting on the video files</div>
       <p>
         The clips live in Google Drive — <code>Old_drive_refactor / Project_documentation / Robocon 2025</code>
-        — and this build could not read them: the sandbox blocked the authenticated download, and the
-        sharing tool available here can only grant access per person, not "anyone with the link".
+        — and the machine that built this page has no network route to Drive's file hosts, so it could not
+        fetch them. That is a sandbox restriction, not a sharing one.
       </p>
       <p style="margin-top:.6rem">
-        <b>To light this section up:</b> open each clip in Drive → <b>Share</b> → <b>General access</b> →
-        <b>Anyone with the link</b>, or drop the <code>.mp4</code> files into
-        <code>docs/assets/media/</code> with the filenames below. The player, the overlay engine and the
-        annotation tracks are already in place — the page switches from placeholder to video the moment a
-        file resolves.
+        <b>To light this section up:</b> add the two <code>.mp4</code> files to
+        <code>docs/assets/media/</code> under the filenames below — GitHub's <b>Add file → Upload files</b>
+        handles both, they are well inside the web upload limit. The player, the overlay engine and the
+        annotation tracks are already in place; the page switches from placeholder to video the moment a
+        file resolves, with no code change.
       </p>
     </div>
 
