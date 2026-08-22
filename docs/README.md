@@ -25,20 +25,26 @@ docs/
   assets/img/         poster frames
 ```
 
-## Adding the match clips
+## Media
 
-The footage page ships with the players hidden and placeholders showing. Drop the files in and
-they swap themselves in automatically — no code change needed:
+Three clips ship with the site, transcoded to 720p in two formats — WebM/VP9 first, H.264 MP4 as
+the fallback — because some Chromium builds have no H.264 decoder at all:
 
-| File | Source in Drive |
-| --- | --- |
-| `assets/media/robots-in-action.mp4` | “DD Robocon25 Robots in Action” |
-| `assets/media/shooting-mechanism.mp4` | “Team Pheonix shooting mechanism” |
+| File | Length | Source |
+| --- | --- | --- |
+| `assets/media/robots-in-action.*` | 22 s | “DD Robocon25 Robots in Action” |
+| `assets/media/shooting-mechanism.*` | 23 s | “Team Pheonix shooting mechanism” |
+| `assets/media/mechanism-detail.*` | 31 s | “Team Pheonix Mechanism-2” |
 
-Optional poster frames: `assets/img/poster-action.jpg`, `assets/img/poster-shoot.jpg`.
+Poster frames sit in `assets/img/`. To replace a clip, keep the filenames and re-run:
 
-Keep them web-sized — H.264, 720p, a few MB each. Anything committed here is public, because
-the repository is public.
+```bash
+ffmpeg -i in.mp4 -vf scale=-2:720 -c:v libx264 -crf 24 -movflags +faststart out.mp4
+ffmpeg -i out.mp4 -c:v libvpx-vp9 -crf 36 -b:v 0 -c:a libopus out.webm
+```
+
+Note that video seeking needs HTTP Range support. GitHub Pages has it; Python's
+`http.server` does not, so seeking will look broken under a naive local preview.
 
 ## Editing annotations
 
@@ -52,6 +58,10 @@ percentages of the frame, so they survive any resize:
 ```
 
 `colour` accepts `cyan`, `green`, `violet`, or omit it for the default orange.
+Add `"chapter": false` to keep a short cue out of the chapter button row — useful for a box that
+tracks something moving fast, where the window has to be a fraction of a second to stay accurate.
+
+Overlapping entries all render their boxes; the last matching one supplies the caption.
 
 ## A note on the simulators
 

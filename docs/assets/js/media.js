@@ -122,19 +122,21 @@
     const video = fig.querySelector('video');
     const layer = fig.querySelector('.anno-layer');
     const trackEl = fig.querySelector('script[type="application/json"]');
-    const caption = fig.parentElement.querySelector('.anno-caption');
-    const timeline = fig.parentElement.querySelector('.anno-timeline');
+    /* All three clips share one .wrap parent, so querySelector on the parent would
+       return clip 1's nodes every time. Walk forward instead, stopping at the next figure. */
+    const caption = nextSibling(fig, '.anno-caption');
+    const timeline = nextSibling(fig, '.anno-timeline');
     if (!video || !layer || !trackEl) return;
 
     let track = [];
     try { track = JSON.parse(trackEl.textContent).annotations || []; } catch (e) { return; }
 
-    /* The figure ships hidden and the placeholder visible; swap them once a file resolves.
-       If the video 404s, nothing happens and the placeholder simply stays. */
-    const slot = fig.parentElement.querySelector('.slot');
-    video.addEventListener('loadedmetadata', () => {
-      fig.style.display = '';
-      if (slot) slot.style.display = 'none';
+    /* If a source ever goes missing, hide the broken player rather than showing a
+       dead rectangle; a placeholder is shown in its place when one is present. */
+    video.addEventListener('error', () => {
+      const slot = nextSibling(fig, '.slot');
+      fig.style.display = 'none';
+      if (slot) slot.style.display = 'block';
     });
 
     /* timeline markers */
@@ -143,6 +145,7 @@
         const dur = video.duration || track.reduce((m, a) => Math.max(m, a.end), 1);
         timeline.innerHTML = '';
         track.forEach((a, i) => {
+          if (a.chapter === false) return;   // short overlay-only cues stay out of the chapter list
           const b = document.createElement('button');
           b.className = 'btn-sm';
           b.textContent = `${fmt(a.start)} · ${a.label}`;
@@ -183,6 +186,16 @@
         caption.style.opacity = active ? '1' : '.35';
       }
     });
+  }
+
+  function nextSibling(el, sel) {
+    let n = el.nextElementSibling;
+    while (n) {
+      if (n.matches(sel)) return n;
+      if (n.tagName === 'FIGURE') return null;
+      n = n.nextElementSibling;
+    }
+    return null;
   }
 
   function fmt(s) {
