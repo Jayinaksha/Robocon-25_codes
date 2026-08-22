@@ -125,14 +125,14 @@ p code, li code, td code {
 }
 
 /* ---------- hero ---------- */
-.hero { padding: clamp(3.5rem, 9vw, 6.5rem) 0 4rem; position: relative; overflow: hidden; }
+.hero { padding: clamp(2.4rem, 6vw, 4.2rem) 0 4rem; position: relative; overflow: hidden; }
 .hero::before {
   content: ""; position: absolute; inset: -40% 20% auto -10%; height: 520px;
   background: radial-gradient(ellipse at center, var(--accent-soft), transparent 62%);
   pointer-events: none;
 }
 .hero > * { position: relative; }
-.hero-meta { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.6rem 0 2rem; }
+.hero-meta { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.4rem 0 1.7rem; }
 .chip {
   font-family: var(--mono); font-size: .76rem; color: var(--ink-dim);
   border: 1px solid var(--line); background: var(--bg-raised);
@@ -329,3 +329,61 @@ footer a { color: var(--ink-dim); }
 ul.tight { margin: 0 0 1rem; padding-left: 1.15rem; color: var(--ink-dim); }
 ul.tight li { margin-bottom: .35rem; }
 .no-bullet { list-style: none; padding-left: 0; }
+
+/* ---------- hero reel ---------- */
+.hero-reel {
+  margin: 2.2rem 0 0;
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #000;
+  box-shadow: var(--shadow);
+  aspect-ratio: 2 / 1;          /* cinematic strip — the arena shot has dead ceiling and floor */
+}
+.hero-reel video {
+  display: block; width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center 45%;  /* bias up so the hoop and the ball's arc stay in frame */
+}
+@media (max-width: 640px) {
+  .hero-reel { aspect-ratio: 16 / 10; }
+}
+
+/* scrim so the caption bar stays readable over bright arena footage */
+.hero-reel::after {
+  content: "";
+  position: absolute; inset: auto 0 0 0; height: 46%;
+  background: linear-gradient(to top, rgba(0, 0, 0, .8), rgba(0, 0, 0, 0));
+  pointer-events: none;
+}
+
+.reel-bar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap;
+  padding: .85rem 1.15rem;
+  font-family: var(--mono); font-size: .78rem; color: #eef1f7;
+}
+.reel-bar a {
+  color: #fff; text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, .45);
+  white-space: nowrap;
+}
+.reel-bar a:hover { color: #ff9c4d; border-color: #ff9c4d; }
+
+.reel-live { display: inline-flex; align-items: center; gap: .55rem; }
+.reel-live i {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent); flex: none;
+  animation: reelPulse 2.4s ease-out infinite;
+}
+@keyframes reelPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 122, 26, .65); }
+  70%  { box-shadow: 0 0 0 9px rgba(255, 122, 26, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 122, 26, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reel-live i { animation: none; }
+}

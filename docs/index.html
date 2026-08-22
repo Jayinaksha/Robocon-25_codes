@@ -48,6 +48,19 @@
       <a class="btn" href="simulations.html">Run the simulations</a>
       <a class="btn" href="code.html">Read the code review</a>
     </div>
+
+    <figure class="hero-reel">
+      <video muted loop playsinline preload="metadata"
+             poster="assets/img/poster-hero.jpg"
+             aria-label="Bot 1 shooting at the far hoop during ABU Robocon 2025">
+        <source src="assets/media/hero-loop.webm" type="video/webm">
+        <source src="assets/media/hero-loop.mp4" type="video/mp4">
+      </video>
+      <figcaption class="reel-bar">
+        <span class="reel-live"><i aria-hidden="true"></i> Bot 1 on court · ABU Robocon 2025</span>
+        <a href="media.html">Annotated clips →</a>
+      </figcaption>
+    </figure>
   </div>
 </header>
 
@@ -107,6 +120,63 @@
         it overwrites two axis slots in the same joystick packet the human would have sent.
       </figcaption>
     </figure>
+  </div>
+</section>
+
+<section id="live">
+  <div class="wrap">
+    <div class="eyebrow">Live</div>
+    <h2>The vision alignment loop, running</h2>
+    <p class="lede">
+      This is not an illustration. It runs the committed <code>PIDController</code>, the same error
+      terms the detector publishes, and the <code>pid()</code> mixer from the drive firmware — so it
+      reproduces what the robot actually does, including what it gets wrong.
+    </p>
+
+    <div class="sim">
+      <div class="sim-head">
+        <h3>realsense_basket_detector.py → pid() in Drive_with_auto.ino</h3>
+        <div style="display:flex; gap:.4rem; flex-wrap:wrap">
+          <button class="btn-sm on" id="pdRun">Pause</button>
+          <button class="btn-sm" id="pdReset">Reset</button>
+          <button class="btn-sm" id="pdMode">As committed</button>
+        </div>
+      </div>
+      <div class="sim-body">
+        <div class="sim-stage">
+          <canvas id="pidCanvas" width="680" height="340"></canvas>
+        </div>
+        <div class="sim-panel">
+          <p style="font-size:.82rem; margin-bottom:1rem">
+            Click the court to drop the robot somewhere else. The cyan cone is the D455's field of
+            view; the green arc is the setpoint it is chasing.
+          </p>
+
+          <div class="readout">
+            <div class="hl"><span>status</span><b id="pdStatus">ADJUSTING</b></div>
+            <div><span>range</span><b id="pdRange">—</b></div>
+            <div><span>setpoint</span><b id="pdSet">—</b></div>
+            <div><span>horizontal_position</span><b id="pdHoriz">—</b></div>
+            <div><span>distance_error</span><b id="pdErr">—</b></div>
+            <div><span>value_x</span><b id="pdVx">—</b></div>
+            <div><span>value_y</span><b id="pdVy">—</b></div>
+          </div>
+
+          <div class="note bug" id="pdDiag" style="font-size:.78rem; margin-top:1rem"></div>
+
+          <a class="btn btn-sm" href="simulations.html#pid"
+             style="display:block; text-align:center; margin-top:1rem; text-decoration:none">
+            Full simulator, with gains →
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:.88rem; margin-top:1.2rem">
+      Leave it on <b>As committed</b> and the robot never settles at the right range. Switch to
+      <b>Corrected mapping</b> and the same gains converge — the difference is two lines in
+      <code>pid()</code>. <a href="code.html#findings">What's wrong and why →</a>
+    </p>
   </div>
 </section>
 
@@ -211,5 +281,7 @@
   </div>
 </footer>
 
+<script src="assets/js/hero.js"></script>
+<script src="assets/js/sim-pid.js"></script>
 </body>
 </html>
