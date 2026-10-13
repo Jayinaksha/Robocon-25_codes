@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Team Phoenix — DD Robocon 2025, IIT Patna</title>
-<meta name="description" content="Two basketball-playing competition robots — one teleoperated, one autonomous — built by Team Phoenix, IIT Patna, for DD Robocon 2025. Control software, the ESP32 joystick bridge, and real match footage.">
+<meta name="description" content="Two basketball-playing competition robots — an attacker that auto-aims with twin flywheels and a defender — built by Team Phoenix, IIT Patna, for DD Robocon 2025. The team film, control software, and real match footage.">
 <link rel="canonical" href="https://jayinaksha.github.io/Robocon-25_codes/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Team Phoenix — DD Robocon 2025">
@@ -39,7 +39,7 @@
     <span class="bar__crumb">/ <b>Robocon 2025</b></span>
     <button class="bar__tool bar__menu" aria-controls="nav" aria-expanded="false" aria-label="Menu"><svg width="14" height="10" viewBox="0 0 14 10" aria-hidden="true"><path d="M0 1h14M0 5h14M0 9h14" stroke="currentColor" stroke-width="1.4"/></svg></button>
     <nav class="bar__nav" id="nav" aria-label="Sections">
-      <a href="#footage">Footage</a><a href="#control">Control path</a><a href="#auto">Autonomy</a><a href="#code">The code</a>
+      <a href="#footage">Footage</a><a href="#sim">Simulation</a><a href="#control">Control path</a><a href="#auto">Auto-aim</a><a href="#code">The code</a>
     </nav>
     <button class="bar__tool" data-theme-toggle aria-label="Switch light or dark"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="6" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M7 1a6 6 0 0 1 0 12z" fill="currentColor"/></svg></button>
   </div>
@@ -55,13 +55,13 @@
       <span class="lbl">Basketball</span>
     </p>
     <h1 class="wordmark">Team<span class="ghost">Phoenix</span></h1>
-    <p class="tagline">Two robots · forty engineers · one fixed deadline</p>
+    <p class="tagline">Basketball, played by robots</p>
 
     <div class="hero-grid">
       <div>
-        <p class="deck">Robocon 2025 asked for robots that play basketball against another team, live. We built two
-          on one shared drive base: <b>R1</b>, teleoperated, with a flywheel shooter; and <b>R2</b>, which finds the
-          hoop with a depth camera and shoots on its own.</p>
+        <p class="deck">Robocon 2025 was basketball, played by robots — two teams, two robots each. Our <b>R1</b> attacks:
+          it collects the ball, dribbles across and <b>auto-aims</b> from the 2- or 3-point zone with twin flywheels.
+          <b>R2</b> defends: it blocks shots, intercepts passes and recovers rebounds.</p>
         <div class="btns mt-m">
           <a class="btn btn--solid" href="#footage">Watch the robots</a>
           <a class="btn" href="https://github.com/Jayinaksha/Robocon-25_codes">Source on GitHub</a>
@@ -70,7 +70,7 @@
           <div><span class="n">40+</span><span class="lbl k">Engineers</span></div>
           <div><span class="n">2</span><span class="lbl k">Robots, one base</span></div>
           <div><span class="n">3</span><span class="lbl k">Sub-teams</span></div>
-          <div><span class="n">D455</span><span class="lbl k">Depth camera, R2</span></div>
+          <div><span class="n">2×350 W</span><span class="lbl k">Flywheel motors</span></div>
         </div>
       </div>
       <figure class="reel-fig" style="margin:0">
@@ -90,7 +90,12 @@
 <section class="sect" id="footage">
   <div class="shell">
     <div class="head"><span class="lbl clause">§ 01</span><h2>On the court</h2></div>
-    <p class="head-sub muted">Unedited footage from testing and from the national arena.</p>
+    <p class="head-sub muted">The team’s edited film first — then unedited footage from testing and the national arena.</p>
+    <div style="border:1px solid var(--edge-hi);background:#000">
+      <video src="assets/media/robocon-film.mp4" poster="assets/media/robocon-film.jpg" controls preload="none" playsinline
+        style="width:100%;aspect-ratio:16/9;background:#000" aria-label="Team Phoenix, the film: the challenge, the omni base, the twin-flywheel shooter, court trials and match day. 1 minute 58, with sound."></video>
+    </div>
+    <p class="figcap" style="margin-bottom:26px"><span class="lbl">The film · 1:58 · with sound</span><span class="lbl lbl--accent">challenge → shooter → match day</span></p>
     <div class="footage rise-kids">
       <figure class="reel-fig tall" style="margin:0">
         <div class="reel">
@@ -126,10 +131,30 @@
   </div>
 </section>
 
+<section class="sect" id="sim">
+  <div class="shell duo" style="align-items:center">
+    <div>
+      <div class="head"><span class="lbl clause">§ 02</span><h2>Shot in simulation first</h2></div>
+      <p class="prose mt-s">Before any aluminium was cut, the shooter’s CAD went into MuJoCo and took physics-simulated
+        three-point shots. Twin flywheels on 350 W motors set ball speed and angle by RPM; a projectile model corrects
+        for the robot’s own motion.</p>
+    </div>
+    <figure class="reel-fig rise" style="margin:0">
+      <div class="reel">
+        <video src="assets/media/robocon-sim.mp4" poster="assets/media/robocon-sim.jpg" muted loop playsinline preload="none"
+          aria-label="The shooter's CAD model launching a basketball in a MuJoCo physics simulation."></video>
+        <div class="reel__corners"></div>
+        <div class="reel__hud"><span class="reel__rec">MuJoCo · shooter CAD</span><span class="reel__tc">00:00.00</span></div>
+        <button class="reel__toggle" aria-label="Play clip">&#9654;</button>
+      </div>
+    </figure>
+  </div>
+</section>
+
 <section class="sect" id="control">
   <div class="shell">
-    <div class="head"><span class="lbl clause">§ 02</span><h2>From thumbstick to flywheel</h2></div>
-    <p class="head-sub muted">R1’s control path. A gamepad on a laptop, ROS 2 in the middle, an ESP32 driving every actuator.</p>
+    <div class="head"><span class="lbl clause">§ 03</span><h2>From thumbstick to flywheel</h2></div>
+    <p class="head-sub muted">The manual control path. A gamepad on a laptop, ROS 2 in the middle, an ESP32 driving the omni base and the shooter.</p>
     <div class="scope scope--min draw rise">
       <svg viewBox="0 0 1000 230" role="img" aria-label="Gamepad to joy_node to joy_serial_bridge to ESP32 over serial at 115200 baud; the ESP32 drives four wheel motors, two flywheel motors, an angle motor and a servo.">
         <rect class="sch-box" x="10" y="80" width="140" height="64"/><text class="sch-t" x="24" y="108">Gamepad</text><text class="sch-f" x="24" y="126">axes + buttons</text>
@@ -174,24 +199,24 @@
 
 <section class="sect" id="auto">
   <div class="shell">
-    <div class="head"><span class="lbl clause">§ 03</span><h2>R2, on its own</h2></div>
-    <p class="head-sub muted">The autonomous robot layers perception and navigation on the same base.</p>
+    <div class="head"><span class="lbl clause">§ 04</span><h2>Auto-aim</h2></div>
+    <p class="head-sub muted">How R1 scores without a human lining up the shot.</p>
     <ol class="trace rise">
-      <li class="step"><span class="num">01</span><div class="body"><h3>Find the hoop</h3><p>An Intel RealSense D455 streams colour and depth; a trained detector finds the hoop and the depth frame gives its range.</p><span class="wire">Detection/simple_hoop_detector.py · last.pt</span></div></li>
-      <li class="step"><span class="num">02</span><div class="body"><h3>Know where it is</h3><p>SLAM localises the robot in the arena, so a shot is aimed from a known pose rather than a guess.</p><span class="wire">ros_depthCamera/</span></div></li>
-      <li class="step"><span class="num">03</span><div class="body"><h3>Move and shoot</h3><p>Nav2 replans around the opposing robots; the drive and shooter firmware take commands from the autonomy stack instead of a gamepad.</p><span class="wire">arduino_codes/Drive_with_auto · _shoot_with_auto</span></div></li>
+      <li class="step"><span class="num">01</span><div class="body"><h3>Find the basket</h3><p>On the robot, an IMX219 camera and an ML detector on a Jetson Nano find the basket. The repo’s detector prototype does the same with a RealSense D455, which adds range.</p><span class="wire">Detection/simple_hoop_detector.py · last.pt</span></div></li>
+      <li class="step"><span class="num">02</span><div class="body"><h3>Set speed and angle</h3><p>Ball speed and launch angle come from flywheel RPM, so aiming is a motor command, not a mechanism change.</p><span class="wire">arduino_codes/_shoot_with_auto</span></div></li>
+      <li class="step"><span class="num">03</span><div class="body"><h3>Correct for motion</h3><p>A projectile model compensates for the robot’s own velocity, so it can shoot while the omni base is still moving.</p><span class="wire">arduino_codes/Drive_with_auto</span></div></li>
     </ol>
   </div>
 </section>
 
 <section class="sect" id="code">
   <div class="shell">
-    <div class="head"><span class="lbl clause">§ 04</span><h2>What is in the repo</h2></div>
+    <div class="head"><span class="lbl clause">§ 05</span><h2>What is in the repo</h2></div>
     <div class="cards mt-m">
       <a class="card plate" href="https://github.com/Jayinaksha/Robocon-25_codes/tree/master/arduino_codes"><span class="lbl lbl--accent">arduino_codes/</span><h3>ESP32 firmware</h3><p>Drive and shooter sketches for both controllers, plus the autonomous variants.</p></a>
       <a class="card plate" href="https://github.com/Jayinaksha/Robocon-25_codes/tree/master/joy_serial_ws"><span class="lbl lbl--accent">joy_serial_ws/</span><h3>ROS 2 bridge</h3><p>The joy_serial_bridge package: /joy in, the serial line out.</p></a>
       <a class="card plate" href="https://github.com/Jayinaksha/Robocon-25_codes/tree/master/Detection"><span class="lbl lbl--accent">Detection/</span><h3>Hoop detection</h3><p>RealSense pipeline and the trained detector weights.</p></a>
-      <a class="card plate" href="https://github.com/Jayinaksha/Robocon-25_codes/tree/master/ros_depthCamera"><span class="lbl lbl--accent">ros_depthCamera/</span><h3>Depth in ROS 2</h3><p>The D455 brought into the ROS 2 graph for R2.</p></a>
+      <a class="card plate" href="https://github.com/Jayinaksha/Robocon-25_codes/tree/master/ros_depthCamera"><span class="lbl lbl--accent">ros_depthCamera/</span><h3>Depth in ROS 2</h3><p>The RealSense D455 brought into the ROS 2 graph.</p></a>
     </div>
     <details class="more mt-l">
       <summary>Run R1 yourself</summary>
@@ -235,7 +260,7 @@ minicom -D /dev/ttyUSB0 -b 115200</pre>
       <a href="https://jayinaksha.github.io/slate/">Slate</a>
       <a href="https://jayinaksha.github.io/newsroom/">Newsroom</a>
     </nav>
-    <div class="fineprint"><span class="lbl">Team Phoenix · IIT Patna</span><span class="lbl">ROS 2 · ESP32 · RealSense D455</span></div>
+    <div class="fineprint"><span class="lbl">Team Phoenix · IIT Patna</span><span class="lbl">ROS 2 · ESP32 · Jetson Nano</span></div>
   </div>
 </footer>
 <script src="assets/plate/plate.js" defer></script>
