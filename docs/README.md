@@ -1,27 +1,31 @@
 # Project site
 
-Static site for the Robocon 25 basketball robot stack. No build step, no dependencies —
-plain HTML, one CSS file and four small JS files.
+Static site for Team Phoenix and the Robocon 25 basketball robot stack. No build step, no
+dependencies. The home page is built on **Plate**, the design system shared by every site under
+`jayinaksha.github.io` (vendored in `assets/plate/`); the four deeper pages keep their own
+`site.css`, re-skinned to the same tokens and type at the bottom of that file, so the simulators
+and the media player run unchanged.
 
 ## Publishing
 
 GitHub Pages, served from this folder:
 
 **Settings → Pages → Build and deployment → Deploy from a branch**, then pick the branch and
-set the folder to **`/docs`**. The `.nojekyll` file stops Jekyll from stripping paths.
+set the folder to **`/docs`**, on the `master` branch. The `.nojekyll` file stops Jekyll from stripping paths.
 
 ## Layout
 
 ```
 docs/
-  index.html          overview + system diagram
+  index.html          home: team film, footage, simulation, control path, auto-aim (Plate)
   architecture.html   dataflow, serial protocol, drive ladder, state machines, pin tables
   simulations.html    three interactive simulators
   code.html           module walkthrough + twelve findings
   media.html          detector HUD reconstruction + annotated clips
   assets/css/site.css design tokens, light and dark
   assets/js/          sim-drive · sim-pid · sim-shoot · media
-  assets/media/       video files (see below)
+  assets/media/       video files (see below), plus the home page's clips and team film
+  assets/plate/       Plate — the shared stylesheet, script and webfonts
   assets/img/         poster frames
 ```
 
