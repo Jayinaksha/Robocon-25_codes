@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code — Robocon 25</title>
+<meta name="description" content="Module-by-module walkthrough of the ROS 2 nodes and Arduino firmware, plus twelve findings from reading the stack end to end.">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23ff7a1a'/><path d='M50 4v92M4 50h92' stroke='%23000' stroke-width='7' opacity='.5'/></svg>">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html"><span class="brand-dot"></span> Robocon 25</a>
+    <div class="nav-links">
+      <a href="index.html">Overview</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="simulations.html">Simulations</a>
+      <a href="code.html" aria-current="page">Code</a>
+      <a href="media.html">Footage</a>
+      <a href="https://github.com/Jayinaksha/Robocon-25_codes">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" style="padding-bottom:2rem">
+  <div class="wrap">
+    <div class="eyebrow">Code</div>
+    <h1>What each piece does,<br>and where it bites</h1>
+    <p class="lede">
+      Four firmware variants and six ROS nodes, read side by side. Line references point at the
+      committed source — every claim below is checkable against the file it names.
+    </p>
+  </div>
+</header>
+
+<section id="map">
+  <div class="wrap">
+    <div class="eyebrow">01 — Layout</div>
+    <h2>Repository map</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Path</th><th>Role</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">arduino_codes/</td><td>Production firmware</td><td>Drive ×2, Shoot ×2, plus the two <code>*_with_auto</code> variants that add the autonomous path</td></tr>
+          <tr><td class="mono">ros_depthCamera/src/basketball_robot/</td><td>Vision + bridge package</td><td>The live stack: detector, PID, serial bridge, launch files</td></tr>
+          <tr><td class="mono">joy_py/ · joy_serial_ws/</td><td>Earlier joystick bridges</td><td>Near-duplicates of each other; <code>joy_py</code> is the newer of the two</td></tr>
+          <tr><td class="mono">Detection/</td><td>Standalone experiments</td><td>HSV colour-threshold detector and the trained <code>last.pt</code></td></tr>
+          <tr><td class="mono">esp32_project_env/</td><td>Committed virtualenv</td><td>Also holds an older set of shoot controllers under <code>Servo_codes/</code></td></tr>
+          <tr><td class="mono">test_d455.py</td><td>Camera smoke test</td><td>Streams 30 frames, prints centre-pixel range</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note" style="margin-top:1.5rem">
+      <div class="note-title">Three generations live in the tree at once</div>
+      <p>
+        <code>joy_serial_ws</code> → <code>joy_py</code> → <code>ros_depthCamera</code> is the actual
+        chronology, and all three still contain a <code>joy_serial_bridge</code> package. Only the last
+        one is wired to the camera. When something behaves unexpectedly, checking <em>which</em> bridge is
+        running is the first thing worth doing.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="modules">
+  <div class="wrap">
+    <div class="eyebrow">02 — Walkthrough</div>
+    <h2>The five files that matter</h2>
+
+    <h3 style="margin-top:2rem">realsense_basket_detector.py <span class="tag tag-info">499 lines</span></h3>
+    <p>
+      Owns the camera, the model and both controllers. It publishes four topics but only two of them
+      close the loop. The depth sampling is the nicest part of the file — an 11×11 patch, zero returns
+      discarded, sorted, extremes trimmed, mean taken:
+    </p>
+    <pre><span class="c"># realsense_basket_detector.py:292</span>
+distances = []
+sample_size = <span class="n">5</span>
+<span class="k">for</span> dx <span class="k">in</span> range(-sample_size, sample_size + <span class="n">1</span>):
+    <span class="k">for</span> dy <span class="k">in</span> range(-sample_size, sample_size + <span class="n">1</span>):
+        px, py = center_x + dx, center_y + dy
+        <span class="k">if</span> <span class="n">0</span> &lt;= px &lt; <span class="n">640</span> <span class="k">and</span> <span class="n">0</span> &lt;= py &lt; <span class="n">480</span>:
+            d = depth_frame.get_distance(px, py)
+            <span class="k">if</span> d &gt; <span class="n">0</span>: distances.append(d)
+
+distances.sort()
+<span class="k">if</span> len(distances) &gt; <span class="n">3</span>: distances = distances[<span class="n">1</span>:-<span class="n">1</span>]  <span class="c"># trim outliers</span>
+distance = sum(distances) / len(distances)</pre>
+    <p class="srcref">
+      Publishes <code>/basket_detection</code>, <code>/basket_distance</code>, <code>/value_x</code>,
+      <code>/value_y</code> and, when cv_bridge is importable, <code>/detection_image</code>.
+    </p>
+
+    <h3 style="margin-top:2.4rem">smart_drive_bridge.py <span class="tag tag-info">203 lines</span></h3>
+    <p>
+      The arbiter. It holds the last <code>Joy</code> message and the two PID values, and on a 20 Hz timer
+      decides which to serialise. The staleness guard is a good instinct — if no joystick message has
+      arrived in 500 ms it sends nothing at all:
+    </p>
+    <pre><span class="c"># smart_drive_bridge.py:121</span>
+<span class="k">if</span> time.time() - self.last_joy_time &gt; <span class="n">0.5</span>:
+    <span class="k">return</span>
+
+<span class="k">with</span> self.serial_lock:
+    <span class="k">if</span> self.auto_mode <span class="k">and</span> <span class="k">not</span> self.override:
+        fake_axes = list(self.joy_data.axes)
+        <span class="k">if</span> len(fake_axes) &gt;= <span class="n">2</span>:          <span class="c"># ← guards 2, writes 3</span>
+            fake_axes[<span class="n">2</span>] = self.pid_x
+            fake_axes[<span class="n">3</span>] = self.pid_y</pre>
+    <p>
+      On shutdown it does the right thing: it writes a packet of zeroed axes with the override button
+      forced high, waits 100 ms, then closes the port — so a Ctrl-C stops the wheels rather than
+      leaving the last command latched.
+    </p>
+
+    <h3 style="margin-top:2.4rem">Drive_with_auto.ino <span class="tag tag-info">359 lines</span></h3>
+    <p>
+      The drive firmware plus an autonomous branch. Two independent debounced toggles — override on
+      button 9, auto on button 7 — both with a 200 ms window and a press/release latch. The ladder
+      itself is covered in the <a href="architecture.html#drive">architecture</a>; what matters here is
+      that <code>pid()</code> is only reached when every translation and rotation test above it fails.
+    </p>
+
+    <h3 style="margin-top:2.4rem">_shoot_with_auto.ino <span class="tag tag-info">508 lines</span></h3>
+    <p>
+      The largest single file. It accepts two different input languages on the same port — line-oriented
+      ROS commands and joystick packets — and dispatches on prefix:
+    </p>
+    <pre><span class="c">// _shoot_with_auto.ino:113</span>
+<span class="k">if</span> (inputBuffer.startsWith(<span class="s">"SHOOT:"</span>) ||
+    inputBuffer.startsWith(<span class="s">"AUTO_MODE:"</span>) ||
+    inputBuffer.startsWith(<span class="s">"STOP_SHOOT"</span>)) {
+  processRosCommand(inputBuffer);
+} <span class="k">else</span> {
+  processPS4Data(inputBuffer);        <span class="c">// "axes;buttons"</span>
+}</pre>
+    <p>
+      No node in the repository ever sends <code>SHOOT:</code> or <code>AUTO_MODE:</code>. The command
+      interface is implemented and reachable, but nothing upstream drives it — autonomous shots are
+      currently only triggerable by hand over a serial monitor.
+    </p>
+
+    <h3 style="margin-top:2.4rem">basketball_detector.py <span class="tag tag-info">290 lines</span></h3>
+    <p>
+      An earlier detector with one idea the live one lacks: it degrades instead of dying. If
+      <code>pyrealsense2</code>, <code>cv2</code> or <code>ultralytics</code> fail to import it drops into
+      a simulation thread that publishes plausible values, so the rest of the graph can be exercised on a
+      laptop with no camera attached. Worth porting forward.
+    </p>
+  </div>
+</section>
+
+<section id="findings">
+  <div class="wrap">
+    <div class="eyebrow">03 — Review</div>
+    <h2>Twelve findings</h2>
+    <p class="lede">
+      Ordered by how much they affect behaviour on the field. Severity is my read; the line references
+      are facts.
+    </p>
+
+    <div id="f1" class="note bug" style="margin-top:2rem">
+      <div class="note-title">1 · The robot parks at the wrong distance <span class="tag tag-bug">HIGH</span></div>
+      <p>
+        <code>target_ground_distance</code> is computed as <code>5.726 × cos(55°) = 3.284 m</code>
+        (<span class="srcref">realsense_basket_detector.py:122</span>), but the matching cosine on the
+        measured side is commented out (<span class="srcref">:311</span>):
+      </p>
+      <pre style="margin-top:.8rem"><span class="n">ground_distance</span> = distance <span class="c">#* math.cos(math.radians(self.shooting_angle))</span></pre>
+      <p>
+        So a slant range is compared against a horizontal projection. The loop converges on
+        <b>3.28 m of measured range</b>, not the 5.726 m the parameter names. Either restore the cosine
+        on line 311 or drop it from line 122 — but the two must agree.
+      </p>
+    </div>
+
+    <div id="f2" class="note bug">
+      <div class="note-title">2 · The PID controllers advance twice per frame <span class="tag tag-bug">HIGH</span></div>
+      <p>
+        <code>compute()</code> mutates <code>previous_error</code>, <code>integral</code> and
+        <code>last_time</code>. It is called once to produce the published value
+        (<span class="srcref">:372</span>) and then a second time, on the same frame, purely to build an
+        overlay string (<span class="srcref">:414</span>):
+      </p>
+      <pre style="margin-top:.8rem">pid_text = <span class="s">f"PID Control: X={self.x_pid.compute(horiz):.3f}, Y={self.y_pid.compute(error):.3f}"</span></pre>
+      <p>
+        The second call sees <code>dt ≈ 0</code>, which inflates the derivative term and double-counts the
+        integral. It is currently harmless <em>only</em> because Ki and Kd are both zero — the moment
+        anyone tunes them, the loop will behave differently from the numbers on screen. Cache the
+        outputs and render those.
+      </p>
+    </div>
+
+    <div id="f3" class="note bug">
+      <div class="note-title">3 · The auto mixer drives the wrong wheel pair <span class="tag tag-bug">HIGH</span></div>
+      <p>
+        In <code>controlMotors()</code>, M2/M4 are the pair driven by the forward axis and M1/M3 by the
+        lateral one. But <code>pid()</code> sends <code>axes[2]</code> — the horizontal alignment error —
+        to M2/M4 (<span class="srcref">Drive_with_auto.ino:311</span>), and the range error to M1/M3.
+        The two corrections are swapped: a hoop off to the left makes the robot drive backwards.
+        Watch it happen in the <a href="simulations.html#pid">alignment simulator</a>.
+      </p>
+    </div>
+
+    <div id="f4" class="note bug">
+      <div class="note-title">4 · The range branch is unreachable <span class="tag tag-bug">HIGH</span></div>
+      <p>
+        <code>pid()</code> is an if/else chain that tests <code>axes[3]</code> only after both
+        <code>axes[2] &lt; 0</code> and <code>axes[2] &gt; 0</code> have failed — that is, only when
+        <code>axes[2]</code> is exactly <code>0.0</code>. A float coming off a proportional controller is
+        essentially never exactly zero, so distance correction never executes. And when it does, those
+        branches compute M2/M4 from <code>axes[2]</code> rather than <code>axes[3]</code>
+        (<span class="srcref">Drive_with_auto.ino:328</span>) — the wrong variable.
+      </p>
+    </div>
+
+    <div id="f5" class="note bug">
+      <div class="note-title">5 · Override can only be toggled once <span class="tag tag-bug">HIGH</span></div>
+      <p>
+        <code>check_override()</code> latches on button 9 but clears the latch on button 4
+        (<span class="srcref">Drive_1_for_new_controllers.ino:246</span>):
+      </p>
+      <pre style="margin-top:.8rem"><span class="k">if</span> (buttons[<span class="n">9</span>] == <span class="n">1</span> &amp;&amp; last_override_button == <span class="n">0</span> &amp;&amp; !toggled_on_this_press) { ... }
+<span class="k">if</span> (buttons[<span class="n">4</span>] == <span class="n">0</span>) { toggled_on_this_press = <span class="k">false</span>; }   <span class="c">// ← 4, not 9</span></pre>
+      <p>
+        In practice button 4 usually sits at 0, which masks the bug — but the two are swapped in
+        <code>Drive_2</code> (toggles on 4, clears on 9), so the same physical button does different
+        things on the two robots. For a safety control, that is the one place you want no ambiguity.
+      </p>
+    </div>
+
+    <div id="f6" class="note bug">
+      <div class="note-title">6 · Blocking delays stall the serial reader <span class="tag tag-bug">MEDIUM</span></div>
+      <p>
+        <code>Rotate_angle()</code> sweeps the servo 5° at a time with <code>delay(15)</code> inside a
+        <code>while</code> loop, and <code>shoot()</code> adds a flat <code>delay(1000)</code>
+        (<span class="srcref">_shoot_with_auto.ino:442</span>). A full fire sequence blocks the main loop
+        for well over a second while the host keeps writing at 20 Hz. The Mega's 64-byte receive buffer
+        holds roughly one packet, so the rest are dropped mid-line — and a truncated packet still parses,
+        leaving stale values in the slots it never reached.
+      </p>
+    </div>
+
+    <div id="f7" class="note warn">
+      <div class="note-title">7 · Rotation triggers are quantised to three levels <span class="tag tag-warn">MEDIUM</span></div>
+      <p>
+        Arduino's <code>map()</code> takes <code>long</code> arguments, so the float trigger value is
+        truncated toward zero before the mapping runs
+        (<span class="srcref">Drive_1_for_new_controllers.ino:96</span>). The result is that
+        <code>rotAnticlock</code> can only ever be 0, 50 or 100 — proportional rotation is not available,
+        and any partially-held trigger gives exactly half speed.
+      </p>
+      <p>
+        There is a sharper edge here: if the joystick driver reports the triggers as <code>0.0</code>
+        before their first press — which several Linux drivers do — then <code>map()</code> returns 50 with
+        the sticks centred, and the robot rotates on its own as soon as Override is cleared. Multiply by
+        1.0 in floating point instead.
+      </p>
+    </div>
+
+    <div id="f8" class="note bug">
+      <div class="note-title">8 · Auto-toggle edge detection reads the wrong button <span class="tag tag-bug">MEDIUM</span></div>
+      <p>
+        The auto-mode toggle tracks button 7 throughout, then stores the <em>override</em> button's state
+        as its "previous" value (<span class="srcref">Drive_with_auto.ino:289</span>):
+      </p>
+      <pre style="margin-top:.8rem">last_auto_toggle = buttons[<span class="n">9</span>];   <span class="c">// should be buttons[7]</span></pre>
+      <p>
+        Edge detection against an unrelated signal — auto mode can toggle on a frame where button 7 was
+        already held, if button 9 happened to change.
+      </p>
+    </div>
+
+    <div id="f9" class="note warn">
+      <div class="note-title">9 · A short axis list raises IndexError <span class="tag tag-warn">MEDIUM</span></div>
+      <p>
+        <span class="srcref">smart_drive_bridge.py:131</span> guards on <code>len(fake_axes) &gt;= 2</code>
+        and then assigns indices 2 and 3. Any pad reporting two or three axes throws inside the timer
+        callback, which kills the 20 Hz writer while the joystick keeps publishing — the robot holds its
+        last command. The guard should be <code>&gt;= 4</code>.
+      </p>
+    </div>
+
+    <div id="f10" class="note warn">
+      <div class="note-title">10 · The two joy bridges disagree on button numbers <span class="tag tag-warn">MEDIUM</span></div>
+      <p>
+        For the same three named functions, <code>joy_to_ros.py</code> uses indices 7, 8 and 9 while
+        <code>joy_to_ros_safe.py</code> uses 6, 7 and 8 — and both label them "Button 7/8/9" in their log
+        strings. Whichever is running silently shifts every control by one.
+      </p>
+    </div>
+
+    <div id="f11" class="note warn">
+      <div class="note-title">11 · The detector loads a model that isn't the trained one <span class="tag tag-warn">MEDIUM</span></div>
+      <p>
+        <code>drive_serial_bridge.py</code> looks for <code>basketball_hoop.pt</code>, falls back to stock
+        <code>yolov8n.pt</code>, and then matches on COCO class names — <code>"sports ball"</code>,
+        <code>"person"</code> (<span class="srcref">drive_serial_bridge.py:296</span>). Meanwhile the
+        trained weights that actually detect the hoop, <code>last.pt</code>, sit next to it in the package.
+        The live node uses them; this one never will.
+      </p>
+      <p>
+        Related: the live node hardcodes <code>/workspace/Robocon25_codes/…</code> as its default model
+        path (<span class="srcref">realsense_basket_detector.py:90</span>) — a directory name that does
+        not match this repository. It only runs where that absolute path happens to exist.
+      </p>
+    </div>
+
+    <div id="f12" class="note">
+      <div class="note-title">12 · Smaller things worth a pass <span class="tag tag-info">LOW</span></div>
+      <ul class="tight" style="margin-top:.5rem">
+        <li><b>Mislabelled telemetry.</b> <code>/basket_detection</code> publishes the distance
+          <em>error</em> under a field named <code>ground_dist</code>
+          (<span class="srcref">realsense_basket_detector.py:358</span>).</li>
+        <li><b>Precedence.</b> <span class="srcref">drive_serial_bridge.py:173</span> mixes
+          <code>and</code>/<code>or</code> without parentheses in the button-7 edge test; it parses as
+          <code>(A and B) or C</code>, which is probably not what was meant.</li>
+        <li><b>Divergent twins.</b> <code>Shoot_1</code> reads <code>buttons[6]</code> where
+          <code>Shoot_2</code> reads <code>axes[6]</code> for the same angle control.</li>
+        <li><b>Unbounded trim.</b> Buttons 11/12 accumulate ±10 PWM with no clamp before
+          <code>analogWrite</code>.</li>
+        <li><b>GUI in a callback.</b> <code>cv2.imshow</code> + <code>waitKey</code> run inside the ROS
+          timer and inside a worker thread elsewhere; on some builds that is a hard crash rather than a
+          warning.</li>
+        <li><b>Repository weight.</b> A full virtualenv (<code>esp32_project_env/</code>) and 100+ colcon
+          build logs are committed — roughly 270 MB of the clone. A <code>.gitignore</code> for
+          <code>log/ build/ install/</code> and the venv would cut that to a few MB.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="fixes">
+  <div class="wrap">
+    <div class="eyebrow">04 — If you only change three things</div>
+    <h2>Highest value per line edited</h2>
+    <div class="grid g3" style="margin-top:1.5rem">
+      <div class="card">
+        <h3>1. Make the mixer match the axes</h3>
+        <p>
+          Swap the pairs in <code>pid()</code> and turn the exact-zero test into a threshold so both
+          corrections run every tick. This is the difference between a loop that centres and a loop
+          that arrives.
+        </p>
+      </div>
+      <div class="card">
+        <h3>2. Agree on the cosine</h3>
+        <p>
+          One line, either side. Until setpoint and measurement use the same geometry, every distance
+          number in the logs is off by a factor of <code>cos(55°)</code>.
+        </p>
+      </div>
+      <div class="card">
+        <h3>3. Take the delays out of the shooter</h3>
+        <p>
+          The stage machine already exists — <code>processAutonomousShoot()</code> is non-blocking. Move
+          the servo sweep into it and the firmware stops dropping packets during a shot.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-grid">
+    <div>
+      Robocon 25 · basketball robot control stack<br>
+      <a href="https://github.com/Jayinaksha/Robocon-25_codes">Jayinaksha/Robocon-25_codes</a>
+    </div>
+    <div><a href="media.html">Next: the footage →</a></div>
+  </div>
+</footer>
+
+</body>
+</html>

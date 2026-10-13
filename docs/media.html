@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Footage — Robocon 25</title>
+<meta name="description" content="The detector's on-screen overlay reconstructed from its own drawing calls, plus annotated match footage.">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23ff7a1a'/><path d='M50 4v92M4 50h92' stroke='%23000' stroke-width='7' opacity='.5'/></svg>">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html"><span class="brand-dot"></span> Robocon 25</a>
+    <div class="nav-links">
+      <a href="index.html">Overview</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="simulations.html">Simulations</a>
+      <a href="code.html">Code</a>
+      <a href="media.html" aria-current="page">Footage</a>
+      <a href="https://github.com/Jayinaksha/Robocon-25_codes">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" style="padding-bottom:2rem">
+  <div class="wrap">
+    <div class="eyebrow">Footage</div>
+    <h1>What the robot sees</h1>
+    <p class="lede">
+      The detector paints its own diagnostic overlay on every frame — box, centre dot, four labels and a
+      translucent status bar. Below, that overlay is rebuilt from the exact <code>cv2</code> calls in the
+      node, so you can drag the range and watch the moment it declares itself positioned.
+    </p>
+  </div>
+</header>
+
+<section id="hud">
+  <div class="wrap">
+    <div class="eyebrow">01 — Detector overlay</div>
+    <h2>The HUD, reconstructed</h2>
+    <p>
+      Every element here is drawn where the node draws it: the box turns green only when
+      <code>|distance_error| &lt; 0.1</code>, the labels stack upward from <code>y1 − 10</code> in 20 px
+      steps, and the status line flips only when the range <em>and</em> the horizontal offset are both
+      inside tolerance.
+    </p>
+
+    <div class="note warn">
+      <div class="note-title">This is a reconstruction, not a camera capture</div>
+      <p>
+        The background is schematic. The overlay geometry, colours, text format and thresholds are taken
+        from <span class="srcref">realsense_basket_detector.py:333–431</span>; the scene behind it is
+        drawn to give the overlay something to sit on.
+      </p>
+    </div>
+
+    <div class="sim">
+      <div class="sim-head">
+        <h3>Basketball Detection — 640 × 480</h3>
+        <span class="srcref">as drawn by the node</span>
+      </div>
+      <div class="sim-body">
+        <div class="sim-stage">
+          <canvas id="hudCanvas" width="640" height="480"></canvas>
+        </div>
+        <div class="sim-panel">
+          <div class="ctrl">
+            <label for="hudDist">measured range <span class="val" id="hudDistVal">4.20 m</span></label>
+            <input type="range" id="hudDist" min="1.5" max="7" step="0.01" value="4.2">
+          </div>
+          <div class="ctrl">
+            <label for="hudHoriz">horizontal_position <span class="val" id="hudHorizVal">-0.31</span></label>
+            <input type="range" id="hudHoriz" min="-1" max="1" step="0.01" value="-0.31">
+          </div>
+          <p style="font-size:.76rem; color:var(--ink-faint); margin:-.2rem 0 1rem">
+            Positive means the hoop is to the <b>left</b> — the sign is flipped on
+            <span class="srcref">:315</span>.
+          </p>
+
+          <div class="readout">
+            <div class="hl"><span>status line</span><b id="hudState">—</b></div>
+            <div><span>distance_error</span><b id="hudErr">—</b></div>
+            <div><span>value_x</span><b id="hudVx">—</b></div>
+            <div><span>value_y</span><b id="hudVy">—</b></div>
+            <div><span>setpoint</span><b>3.28 m</b></div>
+          </div>
+
+          <div class="note bug" style="font-size:.78rem; margin-top:1rem">
+            <b>Slide the range to 3.28 m</b> — that is where the loop settles, not the 5.726 m named in
+            <code>target_distance</code>. See <a href="code.html#f1">finding 1</a>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="clips">
+  <div class="wrap">
+    <div class="eyebrow">02 — Match footage</div>
+    <h2>Annotated clips</h2>
+    <p class="lede">
+      Each clip carries a timed annotation track: boxes and captions appear over the video as playback
+      reaches them, and the chapter buttons seek straight to a moment.
+    </p>
+
+    <div class="note">
+      <div class="note-title">How to read these</div>
+      <p>
+        Boxes and captions are keyed to timestamps taken from the footage itself, so they appear as
+        playback reaches them. The chapter buttons under each clip jump straight to a moment. Where a
+        clip carries its own on-screen caption — “SHOOTING FROM 2POINT ZONE” and the like — the
+        annotation ties it back to the constant in the firmware that produces it.
+      </p>
+    </div>
+
+    <!-- ── clip 1 ── -->
+    <h3 style="margin-top:2.5rem">Match play — robots on court</h3>
+    <p style="font-size:.88rem">
+      Wide arena shot, 22 s. Bot 1 works the court in front of the crowd and puts up a shot at the
+      far hoop around the 15-second mark.
+    </p>
+    <figure class="media-figure" data-annotated>
+      <video controls playsinline preload="metadata" poster="assets/img/poster-action.jpg">
+        <source src="assets/media/robots-in-action.webm" type="video/webm">
+        <source src="assets/media/robots-in-action.mp4" type="video/mp4">
+      </video>
+      <div class="anno-layer"></div>
+      <script type="application/json">
+      {
+        "annotations": [
+          { "start": 0, "end": 6, "label": "On court",
+            "note": "Bot 1 holding position with a ball loaded. Everything here is manual: the driver's stick lands in axes[0] and axes[1], and the firmware resolves it to one of the four quadrant branches.",
+            "boxes": [ { "x": 56.9, "y": 58.9, "w": 11.3, "h": 22.2, "label": "bot 1", "colour": "cyan" },
+                       { "x": 0, "y": 35, "w": 8, "h": 14, "label": "hoop" } ] },
+          { "start": 6, "end": 14, "label": "Repositioning",
+            "note": "Lining up by eye. Note the robot translates or turns, never both — the two rotation branches sit below all eight translation branches, so any stick deflection past the 0.1 deadzone wins.",
+            "boxes": [ { "x": 54, "y": 58, "w": 14, "h": 24, "label": "bot 1", "colour": "cyan" } ] },
+          { "start": 14, "end": 19, "label": "Shot",
+            "note": "Ball away. Flywheels spin at one of the three PWM presets, then the servo flicks the ball through — and for about a second of that sequence the firmware is inside blocking delays and reading no serial at all.",
+            "boxes": [ { "x": 4.4, "y": 22, "w": 13, "h": 22, "label": "target hoop" },
+                       { "x": 63.7, "y": 62, "w": 11.3, "h": 17.8, "label": "bot 1", "colour": "cyan" } ] },
+          { "start": 15.55, "end": 15.68, "label": "Ball", "chapter": false,
+            "note": "The ball, mid-arc between the robot and the far hoop.",
+            "boxes": [ { "x": 43.5, "y": 18, "w": 3, "h": 5, "label": "ball", "colour": "green" } ] },
+          { "start": 19, "end": 23, "label": "Reset",
+            "note": "After the shot the shooter clears its permission flag — button 8 has to be pressed again before the next autonomous shot is allowed.",
+            "boxes": [] }
+        ]
+      }
+      </script>
+    </figure>
+    <p class="anno-caption" style="min-height:1.6rem; font-size:.88rem; color:var(--ink-dim); margin-top:.8rem"></p>
+    <div class="anno-timeline" style="display:flex; gap:.4rem; flex-wrap:wrap; margin-top:.4rem"></div>
+
+    <!-- ── clip 2 ── -->
+    <h3 style="margin-top:2.5rem">Shooting from both zones</h3>
+    <p style="font-size:.88rem">
+      Practice room, 23 s. The clip labels its own two segments — the 2-point zone up close, then the
+      3-point zone from across the room. That is the distinction the three PWM presets exist to serve.
+    </p>
+    <figure class="media-figure" data-annotated>
+      <video controls playsinline preload="metadata" poster="assets/img/poster-shoot.jpg">
+        <source src="assets/media/shooting-mechanism.webm" type="video/webm">
+        <source src="assets/media/shooting-mechanism.mp4" type="video/mp4">
+      </video>
+      <div class="anno-layer"></div>
+      <script type="application/json">
+      {
+        "annotations": [
+          { "start": 0, "end": 2, "label": "Team card",
+            "note": "Team Robocon, Indian Institute of Technology Patna.",
+            "boxes": [] },
+          { "start": 2, "end": 8.5, "label": "2-point zone",
+            "note": "Close range. The ball sits between the two counter-rotating flywheels while they spin up; the vertical mast carries the whole launcher assembly, and the angle motor below sets the tilt with no encoder to confirm it.",
+            "boxes": [ { "x": 46.2, "y": 26.7, "w": 13.1, "h": 31.1, "label": "flywheel head", "colour": "cyan" },
+                       { "x": 40.6, "y": 7.8, "w": 7.5, "h": 5.6, "label": "hoop" },
+                       { "x": 43.7, "y": 73.3, "w": 18.7, "h": 10, "label": "drive base", "colour": "violet" } ] },
+          { "start": 4.65, "end": 5.05, "label": "Ball", "chapter": false,
+            "note": "The ball reaching the rim from the 2-point zone.",
+            "boxes": [ { "x": 43.9, "y": 3.2, "w": 3.6, "h": 7.2, "label": "ball", "colour": "green" } ] },
+          { "start": 8.5, "end": 18, "label": "3-point zone",
+            "note": "Same mechanism, roughly triple the range — the robot is at the far right of the room and the ball arrives at the rim. Longer range means a higher preset, which is exactly what buttons 0, 1 and 3 select: PWM 100, 120 and 150 on bot 1.",
+            "boxes": [ { "x": 25.6, "y": 28.4, "w": 6, "h": 7.6, "label": "hoop" },
+                       { "x": 28.2, "y": 30.7, "w": 2.5, "h": 4.4, "label": "ball at rim", "colour": "green" },
+                       { "x": 87.5, "y": 56.7, "w": 11.9, "h": 30, "label": "shooter", "colour": "cyan" } ] },
+          { "start": 18, "end": 23, "label": "Repeat attempts",
+            "note": "Further attempts from the same spot. Each one needs the trim reset — pressing a preset button zeroes change_speed, so any ±10 PWM tuning from buttons 11 and 12 is discarded.",
+            "boxes": [] }
+        ]
+      }
+      </script>
+    </figure>
+    <p class="anno-caption" style="min-height:1.6rem; font-size:.88rem; color:var(--ink-dim); margin-top:.8rem"></p>
+    <div class="anno-timeline" style="display:flex; gap:.4rem; flex-wrap:wrap; margin-top:.4rem"></div>
+
+    <!-- ── clip 3 ── -->
+    <h3 style="margin-top:2.5rem">Mechanism detail — both robots</h3>
+    <p style="font-size:.88rem">
+      31 s, front on. The clearest look at the build: the octagonal chassis deck, the mast, the
+      launcher head, and the second robot that feeds it.
+    </p>
+    <figure class="media-figure" data-annotated>
+      <video controls playsinline preload="metadata" poster="assets/img/poster-detail.jpg">
+        <source src="assets/media/mechanism-detail.webm" type="video/webm">
+        <source src="assets/media/mechanism-detail.mp4" type="video/mp4">
+      </video>
+      <div class="anno-layer"></div>
+      <script type="application/json">
+      {
+        "annotations": [
+          { "start": 0, "end": 2, "label": "Team card",
+            "note": "Team Robocon, Indian Institute of Technology Patna.",
+            "boxes": [] },
+          { "start": 2, "end": 9, "label": "Launcher and chassis",
+            "note": "Front on. The launcher head sits at the top of the mast; the wide octagonal deck below carries the four-wheel drive base — one PWM pin and one direction pin per wheel, front and back on the x pair, left and right on the y pair.",
+            "boxes": [ { "x": 44.4, "y": 17.3, "w": 12.5, "h": 13.3, "label": "launcher head", "colour": "cyan" },
+                       { "x": 35, "y": 48.4, "w": 30.6, "h": 15.1, "label": "chassis deck", "colour": "violet" },
+                       { "x": 56.9, "y": 68.4, "w": 4.7, "h": 8.9, "label": "angle motor" },
+                       { "x": 42.5, "y": 76.7, "w": 13.7, "h": 23.3, "label": "ball", "colour": "green" } ] },
+          { "start": 9, "end": 16, "label": "Walk around",
+            "note": "Different angles on the same assembly. The wiring loom running down the mast is the reason the two boards are on separate serial ports — drive and shooter never share a link.",
+            "boxes": [] },
+          { "start": 16, "end": 22, "label": "175 cm apart",
+            "note": "The clip's own dimension callout: 175 cm between the shooter and the second robot that carries the ball. That is a hand-off distance between the two machines, not a shooting range — the shot target in the vision node is 5.726 m.",
+            "boxes": [ { "x": 38.1, "y": 18.9, "w": 11.2, "h": 28.9, "label": "shooter", "colour": "cyan" },
+                       { "x": 52.5, "y": 33.3, "w": 13.7, "h": 30, "label": "ball carrier", "colour": "violet" },
+                       { "x": 43.7, "y": 44.4, "w": 11.9, "h": 11.1, "label": "175 cm", "colour": "green" } ] },
+          { "start": 22, "end": 32, "label": "Room",
+            "note": "The practice space, with the hoop on its pole at the left — the same rig used for the 3-point clip.",
+            "boxes": [] }
+        ]
+      }
+      </script>
+    </figure>
+    <p class="anno-caption" style="min-height:1.6rem; font-size:.88rem; color:var(--ink-dim); margin-top:.8rem"></p>
+    <div class="anno-timeline" style="display:flex; gap:.4rem; flex-wrap:wrap; margin-top:.4rem"></div>
+  </div>
+</section>
+
+<section id="track-format">
+  <div class="wrap">
+    <div class="eyebrow">03 — Reference</div>
+    <h2>Annotation track format</h2>
+    <p>
+      Tracks are inline JSON inside each figure. Coordinates are percentages of the video frame, so they
+      survive any resize. Add, edit or retime an annotation by editing this block — no build step.
+    </p>
+    <pre>{
+  <span class="s">"annotations"</span>: [
+    {
+      <span class="s">"start"</span>: <span class="n">4</span>,                  <span class="c">// seconds</span>
+      <span class="s">"end"</span>:   <span class="n">9</span>,
+      <span class="s">"label"</span>: <span class="s">"Approach"</span>,        <span class="c">// chapter button text</span>
+      <span class="s">"note"</span>:  <span class="s">"Closing on the hoop…"</span>,
+      <span class="s">"boxes"</span>: [
+        { <span class="s">"x"</span>: <span class="n">44</span>, <span class="s">"y"</span>: <span class="n">22</span>, <span class="s">"w"</span>: <span class="n">18</span>, <span class="s">"h"</span>: <span class="n">20</span>,
+          <span class="s">"label"</span>: <span class="s">"hoop"</span>, <span class="s">"colour"</span>: <span class="s">"cyan"</span> }
+      ]
+    }
+  ]
+}</pre>
+    <p style="font-size:.85rem">
+      <code>colour</code> accepts <code>cyan</code>, <code>green</code>, <code>violet</code> or is
+      omitted for the default orange. Boxes with no <code>label</code> render without a tag.
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-grid">
+    <div>
+      Robocon 25 · basketball robot control stack<br>
+      <a href="https://github.com/Jayinaksha/Robocon-25_codes">Jayinaksha/Robocon-25_codes</a>
+    </div>
+    <div><a href="index.html">Back to the overview →</a></div>
+  </div>
+</footer>
+
+<script src="assets/js/media.js"></script>
+</body>
+</html>

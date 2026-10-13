@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Architecture — Robocon 25</title>
+<meta name="description" content="Dataflow, serial protocol, drive decision ladder, control-mode state machine and the autonomous shooting sequence.">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23ff7a1a'/><path d='M50 4v92M4 50h92' stroke='%23000' stroke-width='7' opacity='.5'/></svg>">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html"><span class="brand-dot"></span> Robocon 25</a>
+    <div class="nav-links">
+      <a href="index.html">Overview</a>
+      <a href="architecture.html" aria-current="page">Architecture</a>
+      <a href="simulations.html">Simulations</a>
+      <a href="code.html">Code</a>
+      <a href="media.html">Footage</a>
+      <a href="https://github.com/Jayinaksha/Robocon-25_codes">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" style="padding-bottom:2rem">
+  <div class="wrap">
+    <div class="eyebrow">Architecture</div>
+    <h1>How the pieces talk</h1>
+    <p class="lede">
+      Six ROS 2 nodes, one 115200-baud serial line and four Arduino Megas. The interesting design
+      decision is that autonomy never gets its own channel — it impersonates the driver.
+    </p>
+  </div>
+</header>
+
+<section id="dataflow">
+  <div class="wrap">
+    <div class="eyebrow">01 — Dataflow</div>
+    <h2>Nodes and topics</h2>
+    <p>
+      The detector never talks to hardware and the bridge never touches the camera. They meet on two
+      <code>Float32</code> topics, which makes either side independently testable — you can publish
+      <code>/value_x</code> by hand and watch the robot move.
+    </p>
+
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 430" role="img" aria-label="ROS node graph showing joy_node and realsense_basket_detector publishing into smart_drive_bridge, which writes serial to two Arduinos.">
+          <!-- hardware in -->
+          <rect class="svg-box" x="10" y="26" width="150" height="58" rx="10"/>
+          <text class="svg-label" x="85" y="50" text-anchor="middle">PS4 controller</text>
+          <text class="svg-sub" x="85" y="68" text-anchor="middle">/dev/input/js0</text>
+
+          <rect class="svg-box" x="10" y="196" width="150" height="58" rx="10"/>
+          <text class="svg-label" x="85" y="220" text-anchor="middle">RealSense D455</text>
+          <text class="svg-sub" x="85" y="238" text-anchor="middle">640×480 @ 30</text>
+
+          <!-- ros nodes -->
+          <rect class="svg-box" x="228" y="26" width="176" height="58" rx="10"/>
+          <text class="svg-label" x="316" y="50" text-anchor="middle">joy_node</text>
+          <text class="svg-sub" x="316" y="68" text-anchor="middle">deadzone 0.1 · 20 Hz</text>
+
+          <rect class="svg-box-accent" x="228" y="166" width="176" height="118" rx="10"/>
+          <text class="svg-label" x="316" y="192" text-anchor="middle">realsense_basket_</text>
+          <text class="svg-label" x="316" y="209" text-anchor="middle">detector</text>
+          <text class="svg-sub" x="316" y="231" text-anchor="middle">YOLO last.pt</text>
+          <text class="svg-sub" x="316" y="247" text-anchor="middle">depth sample 11×11</text>
+          <text class="svg-sub" x="316" y="263" text-anchor="middle">2× PIDController</text>
+
+          <!-- topics -->
+          <rect class="svg-box" x="470" y="30" width="122" height="34" rx="17"/>
+          <text class="svg-sub" x="531" y="51" text-anchor="middle">/joy</text>
+
+          <rect class="svg-box" x="470" y="150" width="122" height="34" rx="17"/>
+          <text class="svg-sub" x="531" y="171" text-anchor="middle">/value_x</text>
+          <rect class="svg-box" x="470" y="196" width="122" height="34" rx="17"/>
+          <text class="svg-sub" x="531" y="217" text-anchor="middle">/value_y</text>
+
+          <rect class="svg-box" x="470" y="262" width="122" height="34" rx="17"/>
+          <text class="svg-sub" x="531" y="283" text-anchor="middle">/basket_distance</text>
+          <rect class="svg-box" x="470" y="308" width="122" height="34" rx="17"/>
+          <text class="svg-sub" x="531" y="329" text-anchor="middle">/detection_image</text>
+
+          <!-- bridge -->
+          <rect class="svg-box-accent" x="656" y="96" width="152" height="104" rx="10"/>
+          <text class="svg-label" x="732" y="124" text-anchor="middle">smart_drive_</text>
+          <text class="svg-label" x="732" y="141" text-anchor="middle">bridge</text>
+          <text class="svg-sub" x="732" y="163" text-anchor="middle">20 Hz timer</text>
+          <text class="svg-sub" x="732" y="179" text-anchor="middle">mode arbitration</text>
+
+          <!-- arduinos -->
+          <rect class="svg-box" x="656" y="270" width="152" height="52" rx="10"/>
+          <text class="svg-label" x="732" y="292" text-anchor="middle">Drive Mega</text>
+          <text class="svg-sub" x="732" y="310" text-anchor="middle">/dev/ttyACM1</text>
+
+          <rect class="svg-box" x="656" y="342" width="152" height="52" rx="10"/>
+          <text class="svg-label" x="732" y="364" text-anchor="middle">Shoot Mega</text>
+          <text class="svg-sub" x="732" y="382" text-anchor="middle">separate port</text>
+
+          <!-- edges -->
+          <path class="svg-edge" d="M160 55 H228"/>
+          <path class="svg-edge" d="M404 55 H470"/>
+          <path class="svg-edge" d="M592 47 H624 Q640 47 640 78 V120 H656"/>
+
+          <path class="svg-edge-live" d="M160 225 H228"/>
+          <path class="svg-edge-live" d="M404 200 Q440 200 440 167 H470"/>
+          <path class="svg-edge-live" d="M404 225 H436 Q452 225 452 213 H470"/>
+          <path class="svg-edge" d="M404 250 Q444 250 444 279 H470"/>
+          <path class="svg-edge" d="M404 268 Q456 268 456 325 H470"/>
+
+          <path class="svg-edge-live" d="M592 167 H620 Q640 167 640 160 H656"/>
+          <path class="svg-edge-live" d="M592 213 H612 Q632 213 632 178 H656"/>
+
+          <path class="svg-edge" d="M732 200 V270"/>
+          <path class="svg-edge" d="M808 148 H846 Q862 148 862 368 H808"/>
+
+          <text class="svg-edge-txt" x="600" y="20">sensor_msgs/Joy</text>
+          <text class="svg-edge-txt" x="612" y="140">std_msgs/Float32</text>
+          <text class="svg-edge-txt" x="742" y="240">"axes;buttons\n"</text>
+        </svg>
+      </div>
+      <figcaption>
+        <strong>Orange is the autonomy path.</strong> <code>/basket_distance</code> and
+        <code>/detection_image</code> are published for humans and rosbag, not consumed by the bridge —
+        the control signal is only the two <code>Float32</code> topics.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="protocol">
+  <div class="wrap">
+    <div class="eyebrow">02 — Protocol</div>
+    <h2>One line, two halves</h2>
+    <p>
+      There is no framing, no checksum and no acknowledgement. A packet is the axis list, a semicolon,
+      the button list and a newline. The Arduino accumulates printable ASCII until it sees
+      <code>\n</code>, then splits on the first <code>;</code>.
+    </p>
+
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 260" role="img" aria-label="Anatomy of the serial packet, showing axis slots 0 to 5 and button slots with their assigned meanings.">
+          <text class="svg-sub" x="10" y="26" style="font-size:12px">packet</text>
+          <rect class="svg-box" x="10" y="36" width="880" height="40" rx="8"/>
+          <text x="30" y="61" class="svg-sub" style="font-size:13px; fill:var(--green)">-0.42,0.00,0.13,-0.05,0.00,0.00,0.00,0.00</text>
+          <text x="392" y="61" class="svg-sub" style="font-size:13px; fill:var(--accent)">;</text>
+          <text x="406" y="61" class="svg-sub" style="font-size:13px; fill:var(--cyan)">0,0,0,0,0,0,0,1,0,0,0,0,0,0,0</text>
+          <text x="686" y="61" class="svg-sub" style="font-size:13px; fill:var(--ink-faint)">\n</text>
+
+          <path class="svg-edge" d="M120 76 V104" stroke-dasharray="3 3"/>
+          <path class="svg-edge" d="M520 76 V104" stroke-dasharray="3 3"/>
+          <text class="svg-edge-txt" x="30" y="120">axes — float, index-addressed</text>
+          <text class="svg-edge-txt" x="440" y="120">buttons — int 0/1</text>
+
+          <!-- axis slots -->
+          <g>
+            <rect class="svg-box" x="10" y="140" width="126" height="46" rx="7"/>
+            <text class="svg-sub" x="73" y="160" text-anchor="middle" style="fill:var(--ink)">axes[0..1]</text>
+            <text class="svg-sub" x="73" y="176" text-anchor="middle">translate X / Y</text>
+
+            <rect class="svg-box-accent" x="146" y="140" width="126" height="46" rx="7"/>
+            <text class="svg-sub" x="209" y="160" text-anchor="middle" style="fill:var(--ink)">axes[2..3]</text>
+            <text class="svg-sub" x="209" y="176" text-anchor="middle">PID inject</text>
+
+            <rect class="svg-box" x="282" y="140" width="126" height="46" rx="7"/>
+            <text class="svg-sub" x="345" y="160" text-anchor="middle" style="fill:var(--ink)">axes[4..5]</text>
+            <text class="svg-sub" x="345" y="176" text-anchor="middle">rotate CCW / CW</text>
+          </g>
+
+          <!-- button slots -->
+          <g>
+            <rect class="svg-box" x="440" y="140" width="104" height="46" rx="7"/>
+            <text class="svg-sub" x="492" y="160" text-anchor="middle" style="fill:var(--ink)">b[0..3]</text>
+            <text class="svg-sub" x="492" y="176" text-anchor="middle">shoot presets</text>
+
+            <rect class="svg-box" x="554" y="140" width="86" height="46" rx="7"/>
+            <text class="svg-sub" x="597" y="160" text-anchor="middle" style="fill:var(--ink)">b[7]</text>
+            <text class="svg-sub" x="597" y="176" text-anchor="middle">auto</text>
+
+            <rect class="svg-box" x="650" y="140" width="86" height="46" rx="7"/>
+            <text class="svg-sub" x="693" y="160" text-anchor="middle" style="fill:var(--ink)">b[8]</text>
+            <text class="svg-sub" x="693" y="176" text-anchor="middle">permission</text>
+
+            <rect class="svg-box" x="746" y="140" width="86" height="46" rx="7"/>
+            <text class="svg-sub" x="789" y="160" text-anchor="middle" style="fill:var(--red)">b[9]</text>
+            <text class="svg-sub" x="789" y="176" text-anchor="middle">override</text>
+          </g>
+
+          <text class="svg-sub" x="10" y="222">Guard: only bytes 32–126 are buffered, so line noise below space is silently dropped.</text>
+          <text class="svg-sub" x="10" y="240">Failure mode: a packet with no ';' is discarded; a truncated packet still parses, leaving stale values in the unfilled slots.</text>
+        </svg>
+      </div>
+      <figcaption>
+        <strong>Axis slots 2 and 3 are the seam.</strong> In manual mode they carry whatever the pad
+        reports; in auto mode <code>smart_drive_bridge</code> overwrites them with PID output before the
+        line is written.
+      </figcaption>
+    </figure>
+
+    <div class="note">
+      <div class="note-title">Why impersonate the joystick?</div>
+      <p>
+        Because the firmware then needs no autonomous code path at all — <code>auto_mode</code> only
+        changes <em>which</em> axes the motor mixer reads. The cost is that the driver's real stick
+        values keep streaming underneath, so the arbitration has to be exactly right on both ends.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="drive">
+  <div class="wrap">
+    <div class="eyebrow">03 — Drive</div>
+    <h2>The decision ladder</h2>
+    <p>
+      <code>controlMotors()</code> is a single if/else chain. It is not a mixing matrix: each branch
+      writes an explicit direction bit and PWM value per wheel. Order matters — the first matching
+      branch wins, and rotation is only reachable when translation is exactly zero.
+    </p>
+
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 420" role="img" aria-label="Flowchart of the drive firmware decision ladder from override check through quadrants to rotation and stop.">
+          <!-- start -->
+          <rect class="svg-box" x="360" y="10" width="180" height="40" rx="20"/>
+          <text class="svg-label" x="450" y="35" text-anchor="middle">packet parsed</text>
+
+          <path class="svg-edge" d="M450 50 V78"/>
+
+          <!-- override -->
+          <path class="svg-box" d="M450 78 L560 116 L450 154 L340 116 Z" style="fill:color-mix(in srgb, var(--red) 14%, transparent); stroke:var(--red)"/>
+          <text class="svg-label" x="450" y="113" text-anchor="middle">Override?</text>
+          <text class="svg-sub" x="450" y="130" text-anchor="middle">boots as true</text>
+
+          <path class="svg-edge" d="M560 116 H660"/>
+          <rect class="svg-box" x="660" y="94" width="150" height="44" rx="8" style="stroke:var(--red)"/>
+          <text class="svg-label" x="735" y="121" text-anchor="middle">all PWM = 0</text>
+          <text class="svg-edge-txt" x="580" y="108">yes</text>
+
+          <path class="svg-edge" d="M450 154 V182"/>
+          <text class="svg-edge-txt" x="460" y="172">no</text>
+
+          <!-- quadrant -->
+          <rect class="svg-box-accent" x="300" y="182" width="300" height="52" rx="8"/>
+          <text class="svg-label" x="450" y="205" text-anchor="middle">sign(x), sign(y) → quadrant</text>
+          <text class="svg-sub" x="450" y="223" text-anchor="middle">4 diagonal cases · x,y scaled by movement_speed 180</text>
+
+          <path class="svg-edge" d="M450 234 V262"/>
+
+          <rect class="svg-box" x="300" y="262" width="300" height="46" rx="8"/>
+          <text class="svg-label" x="450" y="283" text-anchor="middle">one axis zero → 4 straight cases</text>
+          <text class="svg-sub" x="450" y="300" text-anchor="middle">drives only the wheel pair on that axis</text>
+
+          <path class="svg-edge" d="M450 308 V334"/>
+
+          <rect class="svg-box" x="300" y="334" width="300" height="46" rx="8"/>
+          <text class="svg-label" x="450" y="355" text-anchor="middle">rotAnticlock / rotclock &gt; 0</text>
+          <text class="svg-sub" x="450" y="372" text-anchor="middle">all four wheels at rot_speed 100</text>
+
+          <path class="svg-edge" d="M600 357 H700 Q716 357 716 330 V300"/>
+          <rect class="svg-box" x="640" y="254" width="152" height="44" rx="8"/>
+          <text class="svg-label" x="716" y="281" text-anchor="middle">else: stop</text>
+
+          <!-- auto branch -->
+          <path class="svg-edge-live" d="M300 357 H196 Q180 357 180 330 V244"/>
+          <rect class="svg-box-accent" x="100" y="196" width="160" height="48" rx="8"/>
+          <text class="svg-label" x="180" y="218" text-anchor="middle">auto_mode → pid()</text>
+          <text class="svg-sub" x="180" y="235" text-anchor="middle">axes[2], axes[3]</text>
+          <text class="svg-edge-txt" x="196" y="348">only if nothing above matched</text>
+        </svg>
+      </div>
+      <figcaption>
+        <strong>Autonomy sits at the bottom of the ladder</strong>
+        (<span class="srcref">Drive_with_auto.ino:236</span>). Any non-zero stick input on axes 0–1 or a
+        held rotation trigger takes priority — which doubles as an implicit driver takeover.
+      </figcaption>
+    </figure>
+
+    <h3 style="margin-top:2.2rem">Wheel layout</h3>
+    <p>
+      Four wheels on a cross: front and back share the X pair, left and right share the Y pair.
+      In the diagonal branches all four run; on a straight move only one pair is energised.
+    </p>
+
+    <figure>
+      <div class="diagram" style="display:grid; place-items:center">
+        <svg viewBox="0 0 420 300" style="min-width:320px; max-width:420px" role="img" aria-label="Wheel layout: M1 front, M3 back on the X pair; M2 left, M4 right on the Y pair.">
+          <circle cx="210" cy="150" r="86" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <rect x="176" y="24" width="68" height="34" rx="6" class="svg-box-accent"/>
+          <text class="svg-label" x="210" y="46" text-anchor="middle">M1</text>
+          <text class="svg-sub" x="210" y="16" text-anchor="middle">front · pin 10</text>
+
+          <rect x="176" y="242" width="68" height="34" rx="6" class="svg-box-accent"/>
+          <text class="svg-label" x="210" y="264" text-anchor="middle">M3</text>
+          <text class="svg-sub" x="210" y="292" text-anchor="middle">back · pin 6</text>
+
+          <rect x="34" y="133" width="68" height="34" rx="6" class="svg-box"/>
+          <text class="svg-label" x="68" y="155" text-anchor="middle">M2</text>
+          <text class="svg-sub" x="68" y="125" text-anchor="middle">left · pin 8</text>
+
+          <rect x="318" y="133" width="68" height="34" rx="6" class="svg-box"/>
+          <text class="svg-label" x="352" y="155" text-anchor="middle">M4</text>
+          <text class="svg-sub" x="352" y="125" text-anchor="middle">right · pin 4</text>
+
+          <line x1="210" y1="58" x2="210" y2="242" class="svg-edge" stroke-dasharray="3 3"/>
+          <line x1="102" y1="150" x2="318" y2="150" class="svg-edge" stroke-dasharray="3 3"/>
+          <text class="svg-sub" x="222" y="104">x pair</text>
+          <text class="svg-sub" x="128" y="142">y pair</text>
+          <text class="svg-sub" x="210" y="186" text-anchor="middle" style="fill:var(--accent)">+x = left, +y = front</text>
+        </svg>
+      </div>
+      <figcaption>
+        Pin numbers shown are bot 1. The sign convention is stated in the firmware comment at
+        <span class="srcref">Drive_1_for_new_controllers.ino:108</span> — “considering Left as positive and front as positive”.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="vision">
+  <div class="wrap">
+    <div class="eyebrow">04 — Vision</div>
+    <h2>Box centre to range</h2>
+    <p>
+      Depth is aligned to colour before anything else, so a pixel in the YOLO box maps directly to a
+      depth sample. Rather than trusting one pixel, the node takes an 11×11 patch at the box centre,
+      drops zero returns, sorts, trims the extremes and averages the rest.
+    </p>
+
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 210" role="img" aria-label="Vision pipeline from aligned frames through YOLO to a trimmed depth mean and two error terms.">
+          <rect class="svg-box" x="8" y="60" width="132" height="70" rx="9"/>
+          <text class="svg-label" x="74" y="88" text-anchor="middle">align()</text>
+          <text class="svg-sub" x="74" y="106" text-anchor="middle">depth → colour</text>
+
+          <rect class="svg-box" x="176" y="60" width="132" height="70" rx="9"/>
+          <text class="svg-label" x="242" y="82" text-anchor="middle">YOLO</text>
+          <text class="svg-sub" x="242" y="100" text-anchor="middle">class 0 only</text>
+          <text class="svg-sub" x="242" y="116" text-anchor="middle">conf ≥ 0.50</text>
+
+          <rect class="svg-box" x="344" y="60" width="150" height="70" rx="9"/>
+          <text class="svg-label" x="419" y="82" text-anchor="middle">depth patch</text>
+          <text class="svg-sub" x="419" y="100" text-anchor="middle">11×11 at centre</text>
+          <text class="svg-sub" x="419" y="116" text-anchor="middle">sort · trim · mean</text>
+
+          <rect class="svg-box-accent" x="530" y="18" width="164" height="66" rx="9"/>
+          <text class="svg-label" x="612" y="42" text-anchor="middle">horizontal error</text>
+          <text class="svg-sub" x="612" y="60" text-anchor="middle">−(cx − 320) / 320</text>
+          <text class="svg-sub" x="612" y="76" text-anchor="middle">+ve = hoop is left</text>
+
+          <rect class="svg-box-accent" x="530" y="106" width="164" height="66" rx="9"/>
+          <text class="svg-label" x="612" y="130" text-anchor="middle">range error</text>
+          <text class="svg-sub" x="612" y="148" text-anchor="middle">d − target_ground</text>
+          <text class="svg-sub" x="612" y="164" text-anchor="middle">target = 3.284 m</text>
+
+          <rect class="svg-box" x="736" y="60" width="156" height="70" rx="9"/>
+          <text class="svg-label" x="814" y="82" text-anchor="middle">2× PID</text>
+          <text class="svg-sub" x="814" y="100" text-anchor="middle">Kp 0.5, Ki 0, Kd 0</text>
+          <text class="svg-sub" x="814" y="116" text-anchor="middle">clamp ±0.5</text>
+
+          <path class="svg-edge" d="M140 95 H176"/>
+          <path class="svg-edge" d="M308 95 H344"/>
+          <path class="svg-edge-live" d="M494 88 Q512 88 512 51 H530"/>
+          <path class="svg-edge-live" d="M494 102 Q512 102 512 139 H530"/>
+          <path class="svg-edge-live" d="M694 51 Q718 51 718 88 H736"/>
+          <path class="svg-edge-live" d="M694 139 Q718 139 718 102 H736"/>
+        </svg>
+      </div>
+      <figcaption>
+        <strong>Note the target.</strong> <code>target_distance</code> is 5.726 m, but the value actually
+        compared against is <code>5.726 × cos(55°) = 3.284 m</code> — while the measured side of that
+        comparison had its cosine correction commented out. See
+        <a href="code.html#f1">finding 1</a>.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="align">
+  <div class="wrap">
+    <div class="eyebrow">05 — Alignment</div>
+    <h2>The closed loop, drawn as a loop</h2>
+
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 300" role="img" aria-label="Closed loop control diagram: setpoint, error, PID, clamp, serial, motor mixer, robot pose, camera, back to error.">
+          <!-- setpoint -->
+          <rect class="svg-box" x="10" y="112" width="112" height="52" rx="9"/>
+          <text class="svg-label" x="66" y="134" text-anchor="middle">setpoint</text>
+          <text class="svg-sub" x="66" y="152" text-anchor="middle">3.284 m, 0 px</text>
+
+          <!-- sum -->
+          <circle cx="176" cy="138" r="20" class="svg-box"/>
+          <text class="svg-label" x="176" y="144" text-anchor="middle">−</text>
+
+          <rect class="svg-box-accent" x="232" y="108" width="118" height="60" rx="9"/>
+          <text class="svg-label" x="291" y="132" text-anchor="middle">PID</text>
+          <text class="svg-sub" x="291" y="150" text-anchor="middle">Kp·e (Ki=Kd=0)</text>
+
+          <rect class="svg-box" x="384" y="108" width="112" height="60" rx="9"/>
+          <text class="svg-label" x="440" y="132" text-anchor="middle">clamp</text>
+          <text class="svg-sub" x="440" y="150" text-anchor="middle">±0.5</text>
+
+          <rect class="svg-box" x="530" y="108" width="128" height="60" rx="9"/>
+          <text class="svg-label" x="594" y="132" text-anchor="middle">axes[2], axes[3]</text>
+          <text class="svg-sub" x="594" y="150" text-anchor="middle">serial @ 20 Hz</text>
+
+          <rect class="svg-box" x="692" y="108" width="128" height="60" rx="9"/>
+          <text class="svg-label" x="756" y="126" text-anchor="middle">pid() mixer</text>
+          <text class="svg-sub" x="756" y="144" text-anchor="middle">×60 translate</text>
+          <text class="svg-sub" x="756" y="159" text-anchor="middle">×40 rotate</text>
+
+          <!-- plant -->
+          <rect class="svg-box" x="620" y="228" width="150" height="52" rx="9"/>
+          <text class="svg-label" x="695" y="250" text-anchor="middle">robot pose</text>
+          <text class="svg-sub" x="695" y="268" text-anchor="middle">range, bearing</text>
+
+          <rect class="svg-box-accent" x="380" y="228" width="160" height="52" rx="9"/>
+          <text class="svg-label" x="460" y="250" text-anchor="middle">camera + YOLO</text>
+          <text class="svg-sub" x="460" y="268" text-anchor="middle">30 Hz measurement</text>
+
+          <path class="svg-edge" d="M122 138 H156"/>
+          <path class="svg-edge" d="M196 138 H232"/>
+          <path class="svg-edge" d="M350 138 H384"/>
+          <path class="svg-edge" d="M496 138 H530"/>
+          <path class="svg-edge" d="M658 138 H692"/>
+          <path class="svg-edge" d="M756 168 V254 H770"/>
+          <path class="svg-edge" d="M620 254 H540"/>
+          <path class="svg-edge-live" d="M380 254 H176 V158"/>
+
+          <text class="svg-edge-txt" x="196" y="252">measured range / offset</text>
+          <text class="svg-edge-txt" x="252" y="102">e</text>
+          <text class="svg-edge-txt" x="126" y="130">r</text>
+        </svg>
+      </div>
+      <figcaption>
+        <strong>Two rates in one loop.</strong> Vision updates at 30 Hz, the serial writer at 20 Hz, and
+        the firmware re-evaluates on every received line — so the plant sees the most recent PID output,
+        not every one of them.
+      </figcaption>
+    </figure>
+
+    <div class="note warn">
+      <div class="note-title">Ki and Kd are both zero</div>
+      <p>
+        As committed, both controllers are pure proportional — the integral and derivative machinery in
+        <code>PIDController</code> runs but contributes nothing. With Kp = 0.5 and a ±0.5 clamp, the loop
+        saturates for any error above 1.0, so approach speed is constant until the last metre.
+        You can feel this in the <a href="simulations.html#pid">alignment simulator</a>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="shoot">
+  <div class="wrap">
+    <div class="eyebrow">06 — Shooting</div>
+    <h2>A permission-gated state machine</h2>
+    <p>
+      An autonomous shot cannot start on vision alone. Override must be off <em>and</em> a human must
+      have granted permission with button 8; the permission is then consumed by the shot and must be
+      re-granted for the next one.
+    </p>
+
+    <figure>
+      <div class="diagram">
+        <svg viewBox="0 0 900 300" role="img" aria-label="Shooting state machine: idle, spin-up two seconds, shoot three seconds, complete, permission reset.">
+          <rect class="svg-box" x="20" y="118" width="130" height="60" rx="9"/>
+          <text class="svg-label" x="85" y="142" text-anchor="middle">idle</text>
+          <text class="svg-sub" x="85" y="160" text-anchor="middle">stage 0</text>
+
+          <path class="svg-box" d="M245 88 L340 148 L245 208 L150 148 Z" style="fill:var(--accent-soft); stroke:var(--accent-line)"/>
+          <text class="svg-label" x="245" y="142" text-anchor="middle">gate</text>
+          <text class="svg-sub" x="245" y="160" text-anchor="middle">!Override &amp;&amp; perm</text>
+
+          <rect class="svg-box-accent" x="376" y="118" width="132" height="60" rx="9"/>
+          <text class="svg-label" x="442" y="142" text-anchor="middle">spin-up</text>
+          <text class="svg-sub" x="442" y="160" text-anchor="middle">stage 1 · 2000 ms</text>
+
+          <rect class="svg-box-accent" x="544" y="118" width="132" height="60" rx="9"/>
+          <text class="svg-label" x="610" y="142" text-anchor="middle">shooting</text>
+          <text class="svg-sub" x="610" y="160" text-anchor="middle">stage 2 · 3000 ms</text>
+
+          <rect class="svg-box" x="712" y="118" width="150" height="60" rx="9"/>
+          <text class="svg-label" x="787" y="142" text-anchor="middle">complete</text>
+          <text class="svg-sub" x="787" y="160" text-anchor="middle">stage 3 · reset perm</text>
+
+          <path class="svg-edge" d="M150 148 H150"/>
+          <path class="svg-edge" d="M340 148 H376"/>
+          <path class="svg-edge" d="M508 148 H544"/>
+          <path class="svg-edge" d="M676 148 H712"/>
+          <path class="svg-edge" d="M787 178 V236 H85 V178"/>
+          <text class="svg-edge-txt" x="400" y="252">permission consumed — press button 8 again for the next shot</text>
+
+          <path class="svg-edge" d="M245 88 V54 H85 V118" style="stroke:var(--red)"/>
+          <text class="svg-edge-txt" x="120" y="46" style="fill:var(--red)">refused: “SHOOTING PERMISSION REQUIRED”</text>
+
+          <text class="svg-sub" x="442" y="200" text-anchor="middle">flywheels at preset PWM</text>
+          <text class="svg-sub" x="610" y="200" text-anchor="middle">servo 90° → 0° → 90°</text>
+        </svg>
+      </div>
+      <figcaption>
+        <strong>Blocking inside a state machine.</strong> The servo sweep in <code>Rotate_angle()</code>
+        steps 5° every 15 ms inside a <code>while</code> loop, and <code>shoot()</code> adds a 1000 ms
+        <code>delay()</code> — during which no serial is read. See <a href="code.html#f6">finding 6</a>.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="pins">
+  <div class="wrap">
+    <div class="eyebrow">07 — Reference</div>
+    <h2>Pin maps and button assignments</h2>
+
+    <h3>Drive board</h3>
+    <div class="table-scroll" style="margin-bottom:2rem">
+      <table>
+        <thead><tr><th>Wheel</th><th>Position</th><th class="mono">Bot 1 PWM</th><th class="mono">Bot 1 DIR</th><th class="mono">Bot 2 PWM</th><th class="mono">Bot 2 DIR</th></tr></thead>
+        <tbody>
+          <tr><td>M1</td><td>Front</td><td class="mono">10</td><td class="mono">22</td><td class="mono">5</td><td class="mono">24</td></tr>
+          <tr><td>M2</td><td>Left</td><td class="mono">8</td><td class="mono">26</td><td class="mono">7</td><td class="mono">28</td></tr>
+          <tr><td>M3</td><td>Back</td><td class="mono">6</td><td class="mono">30</td><td class="mono">9</td><td class="mono">32</td></tr>
+          <tr><td>M4</td><td>Right</td><td class="mono">4</td><td class="mono">34</td><td class="mono">11</td><td class="mono">36</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Shooter board</h3>
+    <div class="table-scroll" style="margin-bottom:2rem">
+      <table>
+        <thead><tr><th>Function</th><th class="mono">Bot 1 PWM</th><th class="mono">Bot 1 DIR</th><th class="mono">Bot 2 PWM</th><th class="mono">Bot 2 DIR</th></tr></thead>
+        <tbody>
+          <tr><td>Right flywheel</td><td class="mono">9</td><td class="mono">22</td><td class="mono">10</td><td class="mono">20</td></tr>
+          <tr><td>Left flywheel</td><td class="mono">11</td><td class="mono">26</td><td class="mono">8</td><td class="mono">6</td></tr>
+          <tr><td>Angle motor</td><td class="mono">14</td><td class="mono">13</td><td class="mono">4</td><td class="mono">18</td></tr>
+          <tr><td>Trigger servo</td><td class="mono" colspan="2">signal 5, rest 90°</td><td class="mono" colspan="2">signal 16, rest 100°</td></tr>
+          <tr><td>Speed presets</td><td class="mono" colspan="2">100 / 120 / 150</td><td class="mono" colspan="2">50 / 80 / 120</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Controller map</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th class="mono">Index</th><th>Board</th><th>Action</th><th>Behaviour</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">b0 / b1 / b3</td><td>Shoot</td><td>Speed preset 1 / 2 / 3</td><td>Latches one mode, clears the others and resets the trim</td></tr>
+          <tr><td class="mono">b2</td><td>Shoot</td><td>Stop</td><td>Motors off, servo back to rest</td></tr>
+          <tr><td class="mono">b7</td><td>Drive</td><td>Auto-align toggle</td><td>Debounced 200 ms, toggled on both host and firmware</td></tr>
+          <tr><td class="mono">b8</td><td>Shoot</td><td>Shoot permission</td><td>Refused while Override is on; consumed after each shot</td></tr>
+          <tr><td class="mono">b9</td><td>Both</td><td>Override</td><td><span class="tag tag-warn">boots ON</span> Robot is inert until the driver clears it</td></tr>
+          <tr><td class="mono">b10</td><td>Shoot</td><td>Manual fire</td><td>Only in manual mode; 250 ms pre-delay</td></tr>
+          <tr><td class="mono">b11 / b12</td><td>Shoot</td><td>Trim ±10 PWM</td><td>Unbounded — no clamp on the accumulated trim</td></tr>
+          <tr><td class="mono">b13 / b14</td><td>Shoot</td><td>Angle down / up</td><td>Held, blocked while any shoot mode is latched</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-grid">
+    <div>
+      Robocon 25 · basketball robot control stack<br>
+      <a href="https://github.com/Jayinaksha/Robocon-25_codes">Jayinaksha/Robocon-25_codes</a>
+    </div>
+    <div><a href="simulations.html">Next: run the simulations →</a></div>
+  </div>
+</footer>
+
+</body>
+</html>

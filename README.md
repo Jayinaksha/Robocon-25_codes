@@ -1,5 +1,9 @@
 # ESP32 Joystick Data Receiver for Robot Control
 
+📖 **[Project site](https://jayinaksha.github.io/Robocon-25_codes/)** — architecture diagrams,
+interactive simulations of the drive mixer and the vision alignment loop, and a walkthrough of
+the code. Source in [`docs/`](docs/).
+
 ## Overview
 
 This project features an ESP32-based joystick data receiver integrated with a ROS 2 `joy_serial_bridge` package. The system enables control of a 4-wheeled drive robot equipped with a flywheel shooting mechanism, an adjustable angle motor, and a servo. The joystick axes and button inputs are processed and mapped to control the robot's motors and mechanisms.
